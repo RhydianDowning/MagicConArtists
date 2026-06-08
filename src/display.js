@@ -7,7 +7,7 @@ function sorted(artistCards) {
     .map(([artist, cards]) => [artist, [...cards].sort((a, b) => a.card.localeCompare(b.card))]);
 }
 
-export function printResults(artistCards, basicLandCards = {}) {
+export function printResults(artistCards, basicLandCards = {}, artistBooths = {}) {
   console.log(boxen(chalk.bold("SignatureHunter Results"), { padding: 0, borderColor: "cyan" }));
   console.log();
 
@@ -23,7 +23,8 @@ export function printResults(artistCards, basicLandCards = {}) {
   }
 
   for (const [artist, cardList] of sorted(mainArtistCards)) {
-    console.log(chalk.bold.green(`▼ ${artist}:`));
+    const booth = artistBooths[artist] ? chalk.dim(` [${artistBooths[artist]}]`) : "";
+    console.log(chalk.bold.green(`▼ ${artist}`) + booth + chalk.bold.green(":"));
     cardList.forEach((e, i) =>
       console.log(chalk.white(`  ${i + 1}) ${e.card}`) + chalk.gray(` - ${e.set} #${e.num}`))
     );

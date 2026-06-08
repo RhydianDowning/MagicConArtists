@@ -69,7 +69,9 @@ const cards = rawCards.map((l) => {
 const cardNames = cards.map((c) => c.name);
 const cardBoards = Object.fromEntries(cards.map((c) => [c.name, c.board]));
 const cardPrintings = Object.fromEntries(cards.filter((c) => c.set && c.num).map((c) => [c.name, { set: c.set, num: c.num }]));
-const myArtists = fs.readFileSync(path.join(ARTISTS_DIR, artistFile), "utf-8").split("\n").map((l) => l.trim()).filter(Boolean);
+const artistLines = fs.readFileSync(path.join(ARTISTS_DIR, artistFile), "utf-8").split("\n").map((l) => l.trim()).filter(Boolean);
+const myArtists = artistLines.map((l) => l.split("|")[0]);
+const artistBooths = Object.fromEntries(artistLines.map((l) => { const [name, booth] = l.split("|"); return [name, booth || ""]; }));
 
 const ignoredLands = {};
 const filteredCards = cardNames.filter((c) => {
@@ -140,10 +142,10 @@ const allBasicLandCards = matchBasicLands(myArtists, null);
 
 if (viewChoice === "terminal") {
   console.log();
-  printResults(useSpecificPrintings ? specificArtistCards : allArtistCards, useSpecificPrintings ? specificBasicLandCards : allBasicLandCards);
+  printResults(useSpecificPrintings ? specificArtistCards : allArtistCards, useSpecificPrintings ? specificBasicLandCards : allBasicLandCards, artistBooths);
   printIgnored(ignoredLands);
 } else {
   const { serve } = await import("./src/server.js");
-  const server = serve(specificArtistCards, 3000, specificBasicLandCards, allArtistCards, allBasicLandCards);
+  const server = serve(specificArtistCards, 3000, specificBasicLandCards, allArtistCards, allBasicLandCards, artistBooths);
   console.log(chalk.green("\n✓ Opened in browser. Press Ctrl+C to stop the server."));
 }

@@ -2,7 +2,7 @@ import http from "http";
 import { exec } from "child_process";
 import { platform } from "os";
 
-function buildSections(artistCards, basicLandCards) {
+function buildSections(artistCards, basicLandCards, artistBooths = {}) {
   const sorted = Object.entries(artistCards)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([artist, cards]) => [artist, [...cards].sort((a, b) => a.card.localeCompare(b.card))]);
@@ -29,16 +29,17 @@ function buildSections(artistCards, basicLandCards) {
     const onlyLands = !cards.length && landCards?.length > 0;
     const hasLands = landCards && landCards.length > 0;
     const classes = [onlyLands ? "lands-only" : "", hasLands ? "has-lands" : ""].filter(Boolean).join(" ");
-    return `<details ${classes ? `class="${classes}"` : ""} open><summary><h2>${artist}</h2></summary><div class="grid">${mainImgs}${landImgs}</div></details>`;
+    const booth = artistBooths[artist] ? `<span class="booth">${artistBooths[artist]}</span>` : "";
+    return `<details ${classes ? `class="${classes}"` : ""} open><summary><h2>${artist}${booth}</h2></summary><div class="grid">${mainImgs}${landImgs}</div></details>`;
   }).filter(Boolean).join("");
 }
 
-function generateHTML(specificArtistCards, specificBasicLandCards, allArtistCards, allBasicLandCards) {
+function generateHTML(specificArtistCards, specificBasicLandCards, allArtistCards, allBasicLandCards, artistBooths = {}) {
   const hasSpecificData = specificArtistCards !== null;
   const defaultArtistCards = hasSpecificData ? specificArtistCards : allArtistCards;
   const defaultBasicLandCards = hasSpecificData ? specificBasicLandCards : allBasicLandCards;
-  const specificSections = buildSections(defaultArtistCards, defaultBasicLandCards);
-  const allSections = hasSpecificData ? buildSections(allArtistCards, allBasicLandCards) : "";
+  const specificSections = buildSections(defaultArtistCards, defaultBasicLandCards, artistBooths);
+  const allSections = hasSpecificData ? buildSections(allArtistCards, allBasicLandCards, artistBooths) : "";
 
   const checkCards = allArtistCards || defaultArtistCards;
   const hasSideboard = Object.values(checkCards).some(cards => cards.some(c => c.board === "sideboard"));
@@ -59,6 +60,7 @@ function generateHTML(specificArtistCards, specificBasicLandCards, allArtistCard
   summary:hover { background: #1c2330; }
   summary::-webkit-details-marker { display: none; }
   summary h2 { margin: 0; font-size: 1.3rem; font-weight: 500; color: #6fffe9; letter-spacing: 0.05em; }
+  .booth { font-size: 0.75rem; font-weight: 400; color: #8b949e; margin-left: 0.75rem; opacity: 0.8; }
   summary::after { content: "▼"; color: #6fffe9; font-size: 1.1rem; position: absolute; right: 1.5rem; transition: transform 0.2s; opacity: 0.8; }
   details:not([open]) summary::after { transform: rotate(-90deg); }
   details:not([open]) summary { border-radius: 10px; }
@@ -114,8 +116,8 @@ function toggleSpecific() {
 </body></html>`;
 }
 
-export function serve(specificArtistCards, port = 3000, specificBasicLandCards = null, allArtistCards = {}, allBasicLandCards = {}) {
-  const html = generateHTML(specificArtistCards, specificBasicLandCards, allArtistCards, allBasicLandCards);
+export function serve(specificArtistCards, port = 3000, specificBasicLandCards = null, allArtistCards = {}, allBasicLandCards = {}, artistBooths = {}) {
+  const html = generateHTML(specificArtistCards, specificBasicLandCards, allArtistCards, allBasicLandCards, artistBooths);
   const server = http.createServer((req, res) => {
     res.writeHead(200, { "Content-Type": "text/html" });
     res.end(html);
