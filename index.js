@@ -78,25 +78,34 @@ if (uncachedCards.length > 0) {
 
 // Prompt to view results
 console.log();
-await select({
-  message: "Ready to display results",
-  choices: [{ name: "View results", value: "view" }],
+const viewChoice = await select({
+  message: "How would you like to view results?",
+  choices: [
+    { name: "View in terminal", value: "terminal" },
+    { name: "View in browser", value: "browser" },
+  ],
 });
 
 // Process all cards from cache
 const artistCards = {};
 for (const card of filteredCards) {
   const results = await getArtists(card);
-  for (const { artist, set, num } of results) {
+  for (const { artist, set, num, image, url } of results) {
     if (myArtists.some((a) => artist.toLowerCase().includes(a.toLowerCase()))) {
       if (!artistCards[artist]) artistCards[artist] = [];
       if (!artistCards[artist].some((e) => e.card === card && e.set === set && e.num === num)) {
-        artistCards[artist].push({ card, set, num });
+        artistCards[artist].push({ card, set, num, image, url });
       }
     }
   }
 }
 
-console.log();
-printResults(artistCards);
-printIgnored(ignoredLands);
+if (viewChoice === "terminal") {
+  console.log();
+  printResults(artistCards);
+  printIgnored(ignoredLands);
+} else {
+  const { serve } = await import("./src/server.js");
+  const server = serve(artistCards);
+  console.log(chalk.green("\n✓ Opened in browser. Press Ctrl+C to stop the server."));
+}

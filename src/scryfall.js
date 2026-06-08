@@ -16,7 +16,6 @@ export async function getArtists(name, { onRateLimit, onResume } = {}) {
   let nextPage = url;
 
   while (nextPage) {
-    await sleep(500);
     const res = await fetch(nextPage, {
       headers: { "User-Agent": USER_AGENT },
     });
@@ -28,8 +27,12 @@ export async function getArtists(name, { onRateLimit, onResume } = {}) {
     }
     if (!res.ok) return [];
     const data = await res.json();
-    data.data.forEach((card) => results.push({ artist: card.artist, set: card.set.toUpperCase(), num: card.collector_number }));
+    data.data.forEach((card) => {
+      const image = card.image_uris?.normal || card.card_faces?.[0]?.image_uris?.normal || "";
+      results.push({ artist: card.artist, set: card.set.toUpperCase(), num: card.collector_number, image, url: card.scryfall_uri });
+    });
     nextPage = data.has_more ? data.next_page : null;
+    await sleep(500);
   }
 
   writeCache(name, results);
