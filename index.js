@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const fs = require("fs");
 const { DECKLIST_PATH, ARTISTS_PATH, BASIC_LANDS } = require("./src/config");
 const { getArtists } = require("./src/scryfall");
