@@ -12,7 +12,7 @@ let requestCount = 0;
 
 async function getArtists(name) {
   const url = `https://api.scryfall.com/cards/search?q=!"${encodeURIComponent(name)}"&unique=art`;
-  const artists = new Set();
+  const results = [];
   let nextPage = url;
 
   while (nextPage) {
@@ -31,11 +31,11 @@ async function getArtists(name) {
       return [];
     }
     const data = await res.json();
-    data.data.forEach((card) => artists.add(card.artist));
+    data.data.forEach((card) => results.push({ artist: card.artist, set: card.set.toUpperCase(), num: card.collector_number }));
     nextPage = data.has_more ? data.next_page : null;
   }
 
-  return [...artists];
+  return results;
 }
 
 const myArtists = fs
@@ -61,18 +61,20 @@ const filteredCards = cards.filter((c) => {
   for (let i = 0; i < filteredCards.length; i++) {
     const card = filteredCards[i];
     console.error(`[${i + 1}/${filteredCards.length}] Fetching: ${card}`);
-    const artists = await getArtists(card);
-    for (const artist of artists) {
+    const results = await getArtists(card);
+    for (const { artist, set, num } of results) {
       if (myArtists.some((a) => artist.toLowerCase().includes(a.toLowerCase()))) {
         if (!artistCards[artist]) artistCards[artist] = [];
-        artistCards[artist].push(card);
+        if (!artistCards[artist].some((e) => e.card === card && e.set === set && e.num === num)) {
+          artistCards[artist].push({ card, set, num });
+        }
       }
     }
   }
 
   for (const [artist, cardList] of Object.entries(artistCards)) {
     console.log(`${artist}:`);
-    cardList.forEach((c, i) => console.log(`  ${i + 1}) ${c}`));
+    cardList.forEach((e, i) => console.log(`  ${i + 1}) ${e.card} - ${e.set} #${e.num}`));
     console.log();
   }
 
