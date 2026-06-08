@@ -81,7 +81,8 @@ function generateHTML(specificArtistCards, specificBasicLandCards, allArtistCard
   body.land-mode details:not(.lands-only):not(.has-lands) { display: none; }
   body.land-mode .card:not(.basicland) { display: none !important; }
   body.land-mode .card.basicland { display: block !important; }
-  #view-all { display: none; }
+  #view-all { display: block; }
+  #view-specific { display: none; }
 </style></head><body>
 <h1>Signature Hunter</h1>
 <p class="subtitle">Plan &bull; Your &bull; Meet</p>
@@ -89,7 +90,7 @@ function generateHTML(specificArtistCards, specificBasicLandCards, allArtistCard
   <button id="btn-sideboard" class="active" onclick="toggleFilter('sideboard')" ${hasSideboard ? '' : 'disabled'}>Show Sideboard</button>
   <button id="btn-considering" class="active" onclick="toggleFilter('considering')" ${hasConsidering ? '' : 'disabled'}>Show Considering</button>
   <button id="btn-landmode" onclick="toggleLandMode()">Basic Land Mode</button>
-  ${hasSpecificData ? '<button id="btn-specific" class="active" onclick="toggleSpecific()">Specific Printings</button>' : ''}
+  ${hasSpecificData ? '<button id="btn-specific" onclick="toggleSpecific()">Specific Printings</button>' : ''}
 </div>
 <div id="view-specific">${specificSections}</div>
 ${hasSpecificData ? `<div id="view-all">${allSections}</div>` : ''}
@@ -105,7 +106,7 @@ function toggleLandMode() {
   document.getElementById('btn-landmode').classList.toggle('active');
 }
 ${hasSpecificData ? `
-let specific = true;
+let specific = false;
 function toggleSpecific() {
   specific = !specific;
   document.getElementById('btn-specific').classList.toggle('active', specific);

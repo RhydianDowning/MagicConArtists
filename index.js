@@ -60,14 +60,6 @@ const artistFile = await select({
 });
 if (artistFile === CANCEL) process.exit(0);
 
-const useSpecificPrintings = await select({
-  message: "Use specific printings from decklist where available?",
-  choices: [
-    { name: "No — show all printings by matched artists", value: false },
-    { name: "Yes — only show the exact printings in my list", value: true },
-  ],
-});
-
 const rawCards = deckFiles.flatMap((f) =>
   fs.readFileSync(path.join(DECKLISTS_DIR, f), "utf-8").split("\n").map((l) => l.trim()).filter(Boolean)
 );
@@ -151,6 +143,16 @@ const specificBasicLandCards = hasAnyPrintingData ? matchBasicLands(myArtists, c
 const allBasicLandCards = matchBasicLands(myArtists, null);
 
 if (viewChoice === "terminal") {
+  let useSpecificPrintings = false;
+  if (hasAnyPrintingData) {
+    useSpecificPrintings = await select({
+      message: "Use specific printings from decklist where available?",
+      choices: [
+        { name: "No — show all printings by matched artists", value: false },
+        { name: "Yes — only show the exact printings in my list", value: true },
+      ],
+    });
+  }
   console.log();
   printResults(useSpecificPrintings ? specificArtistCards : allArtistCards, useSpecificPrintings ? specificBasicLandCards : allBasicLandCards, artistBooths);
   printIgnored(ignoredLands);
