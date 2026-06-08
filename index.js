@@ -4,7 +4,7 @@ import path from "path";
 import select from "@inquirer/select";
 import cliProgress from "cli-progress";
 import chalk from "chalk";
-import { DECKLISTS_DIR, ARTISTS_DIR, BASIC_LANDS } from "./src/config.js";
+import { DECKLISTS_DIR, ARTISTS_DIR, BASIC_LANDS, DATA_DIR } from "./src/config.js";
 import { getArtists, isCached } from "./src/scryfall.js";
 import { printResults, printIgnored } from "./src/display.js";
 
@@ -25,11 +25,25 @@ const artistFile = await select({
 });
 if (artistFile === CANCEL) process.exit(0);
 
-const cards = fs.readFileSync(path.join(DECKLISTS_DIR, deckFile), "utf-8").split("\n").map((l) => l.trim()).filter(Boolean);
+const useSpecificPrintings = await select({
+  message: "Use specific printings from decklist where available?",
+  choices: [
+    { name: "No — show all printings by matched artists", value: false },
+    { name: "Yes — only show the exact printings in my list", value: true },
+  ],
+});
+
+const rawCards = fs.readFileSync(path.join(DECKLISTS_DIR, deckFile), "utf-8").split("\n").map((l) => l.trim()).filter(Boolean);
+const cards = rawCards.map((l) => {
+  const parts = l.split("|");
+  return { name: parts[0], board: parts[3] || "mainboard" };
+});
+const cardNames = cards.map((c) => c.name);
+const cardBoards = Object.fromEntries(cards.map((c) => [c.name, c.board]));
 const myArtists = fs.readFileSync(path.join(ARTISTS_DIR, artistFile), "utf-8").split("\n").map((l) => l.trim()).filter(Boolean);
 
 const ignoredLands = {};
-const filteredCards = cards.filter((c) => {
+const filteredCards = cardNames.filter((c) => {
   if (BASIC_LANDS.includes(c.toLowerCase())) {
     ignoredLands[c] = (ignoredLands[c] || 0) + 1;
     return false;
@@ -90,22 +104,36 @@ const viewChoice = await select({
 const artistCards = {};
 for (const card of filteredCards) {
   const results = await getArtists(card);
+  const board = cardBoards[card] || "mainboard";
   for (const { artist, set, num, image, url } of results) {
     if (myArtists.some((a) => artist.toLowerCase().includes(a.toLowerCase()))) {
       if (!artistCards[artist]) artistCards[artist] = [];
       if (!artistCards[artist].some((e) => e.card === card && e.set === set && e.num === num)) {
-        artistCards[artist].push({ card, set, num, image, url });
+        artistCards[artist].push({ card, set, num, image, url, board });
       }
+    }
+  }
+}
+
+// Load basic land data from pre-fetched files
+const basicLandCards = {};
+for (const land of BASIC_LANDS) {
+  const landData = JSON.parse(fs.readFileSync(path.join(DATA_DIR, `${land}.json`), "utf-8"));
+  for (const { artist, set, num, image, url } of landData) {
+    if (myArtists.some((a) => artist.toLowerCase().includes(a.toLowerCase()))) {
+      if (!basicLandCards[artist]) basicLandCards[artist] = [];
+      basicLandCards[artist].push({ card: land.charAt(0).toUpperCase() + land.slice(1), set, num, image, url, board: "basicland" });
     }
   }
 }
 
 if (viewChoice === "terminal") {
   console.log();
-  printResults(artistCards);
+  if (useSpecificPrintings) console.log(chalk.yellow("⚠ Specific printings not implemented yet — showing all printings.\n"));
+  printResults(artistCards, basicLandCards);
   printIgnored(ignoredLands);
 } else {
   const { serve } = await import("./src/server.js");
-  const server = serve(artistCards);
+  const server = serve(artistCards, 3000, useSpecificPrintings, basicLandCards);
   console.log(chalk.green("\n✓ Opened in browser. Press Ctrl+C to stop the server."));
 }
