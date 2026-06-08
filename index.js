@@ -64,10 +64,11 @@ const useSpecificPrintings = await select({
 const rawCards = fs.readFileSync(path.join(DECKLISTS_DIR, deckFile), "utf-8").split("\n").map((l) => l.trim()).filter(Boolean);
 const cards = rawCards.map((l) => {
   const parts = l.split("|");
-  return { name: parts[0], board: parts[3] || "mainboard" };
+  return { name: parts[0], set: parts[1] || "", num: parts[2] || "", board: parts[3] || "mainboard" };
 });
 const cardNames = cards.map((c) => c.name);
 const cardBoards = Object.fromEntries(cards.map((c) => [c.name, c.board]));
+const cardPrintings = Object.fromEntries(cards.filter((c) => c.set && c.num).map((c) => [c.name, { set: c.set, num: c.num }]));
 const myArtists = fs.readFileSync(path.join(ARTISTS_DIR, artistFile), "utf-8").split("\n").map((l) => l.trim()).filter(Boolean);
 
 const ignoredLands = {};
@@ -128,19 +129,21 @@ const viewChoice = await select({
   ],
 });
 
-// Process all cards from cache
-const artistCards = await matchArtistCards(filteredCards, cardBoards, myArtists);
+// Process all cards from cache - both specific and all printings
+const hasAnyPrintingData = Object.keys(cardPrintings).length > 0;
+const specificArtistCards = hasAnyPrintingData ? await matchArtistCards(filteredCards, cardBoards, myArtists, cardPrintings) : null;
+const allArtistCards = await matchArtistCards(filteredCards, cardBoards, myArtists, null);
 
 // Load basic land data from pre-fetched files
-const basicLandCards = matchBasicLands(myArtists);
+const specificBasicLandCards = hasAnyPrintingData ? matchBasicLands(myArtists, cardPrintings) : null;
+const allBasicLandCards = matchBasicLands(myArtists, null);
 
 if (viewChoice === "terminal") {
   console.log();
-  if (useSpecificPrintings) console.log(chalk.yellow("⚠ Specific printings not implemented yet — showing all printings.\n"));
-  printResults(artistCards, basicLandCards);
+  printResults(useSpecificPrintings ? specificArtistCards : allArtistCards, useSpecificPrintings ? specificBasicLandCards : allBasicLandCards);
   printIgnored(ignoredLands);
 } else {
   const { serve } = await import("./src/server.js");
-  const server = serve(artistCards, 3000, useSpecificPrintings, basicLandCards);
+  const server = serve(specificArtistCards, 3000, specificBasicLandCards, allArtistCards, allBasicLandCards);
   console.log(chalk.green("\n✓ Opened in browser. Press Ctrl+C to stop the server."));
 }

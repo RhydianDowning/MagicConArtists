@@ -7,32 +7,37 @@ function artistMatches(artist, myArtists) {
   return myArtists.some((a) => artist.toLowerCase().includes(a.toLowerCase()));
 }
 
-export async function matchArtistCards(filteredCards, cardBoards, myArtists) {
+export async function matchArtistCards(filteredCards, cardBoards, myArtists, cardPrintings = null) {
   const artistCards = {};
   for (const card of filteredCards) {
     const results = await getArtists(card);
     const board = cardBoards[card] || "mainboard";
+    const specificPrinting = cardPrintings?.[card];
     for (const { artist, set, num, image, url } of results) {
-      if (artistMatches(artist, myArtists)) {
-        if (!artistCards[artist]) artistCards[artist] = [];
-        if (!artistCards[artist].some((e) => e.card === card && e.set === set && e.num === num)) {
-          artistCards[artist].push({ card, set, num, image, url, board });
-        }
+      if (!artistMatches(artist, myArtists)) continue;
+      if (specificPrinting && set !== specificPrinting.set) continue;
+      if (specificPrinting && num !== specificPrinting.num) continue;
+      if (!artistCards[artist]) artistCards[artist] = [];
+      if (!artistCards[artist].some((e) => e.card === card && e.set === set && e.num === num)) {
+        artistCards[artist].push({ card, set, num, image, url, board });
       }
     }
   }
   return artistCards;
 }
 
-export function matchBasicLands(myArtists) {
+export function matchBasicLands(myArtists, cardPrintings = null) {
   const basicLandCards = {};
   for (const land of BASIC_LANDS) {
     const landData = JSON.parse(fs.readFileSync(path.join(DATA_DIR, `${land}.json`), "utf-8"));
+    const cardName = land.charAt(0).toUpperCase() + land.slice(1);
+    const specificPrinting = cardPrintings?.[cardName];
     for (const { artist, set, num, image, url } of landData) {
-      if (artistMatches(artist, myArtists)) {
-        if (!basicLandCards[artist]) basicLandCards[artist] = [];
-        basicLandCards[artist].push({ card: land.charAt(0).toUpperCase() + land.slice(1), set, num, image, url, board: "basicland" });
-      }
+      if (!artistMatches(artist, myArtists)) continue;
+      if (specificPrinting && set !== specificPrinting.set) continue;
+      if (specificPrinting && num !== specificPrinting.num) continue;
+      if (!basicLandCards[artist]) basicLandCards[artist] = [];
+      basicLandCards[artist].push({ card: cardName, set, num, image, url, board: "basicland" });
     }
   }
   return basicLandCards;

@@ -2,21 +2,17 @@ import http from "http";
 import { exec } from "child_process";
 import { platform } from "os";
 
-function generateHTML(artistCards, useSpecificPrintings = false, basicLandCards = {}) {
+function buildSections(artistCards, basicLandCards) {
   const sorted = Object.entries(artistCards)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([artist, cards]) => [artist, [...cards].sort((a, b) => a.card.localeCompare(b.card))]);
 
-  // Merge basic lands into artist sections as hidden by default
   const allSorted = sorted.map(([artist, cards]) => {
-    const landCards = basicLandCards[artist] || [];
-    return [artist, cards, landCards.sort((a, b) => a.card.localeCompare(b.card))];
+    const landCards = (basicLandCards[artist] || []).sort((a, b) => a.card.localeCompare(b.card));
+    return [artist, cards, landCards];
   });
-  // Add artists that only have basic lands
   for (const [artist, lands] of Object.entries(basicLandCards).sort(([a], [b]) => a.localeCompare(b))) {
-    if (!artistCards[artist]) {
-      allSorted.push([artist, [], lands.sort((a, b) => a.card.localeCompare(b.card))]);
-    }
+    if (!artistCards[artist]) allSorted.push([artist, [], lands.sort((a, b) => a.card.localeCompare(b.card))]);
   }
   allSorted.sort(([a], [b]) => a.localeCompare(b));
 
@@ -26,21 +22,27 @@ function generateHTML(artistCards, useSpecificPrintings = false, basicLandCards 
     return `<div class="card${boardClass}"><a href="${c.url}" target="_blank"><img src="${c.image}" alt="${c.card}"></a><p>${c.card}<br><small>${c.set} #${c.num}</small></p>${label}</div>`;
   }
 
-  const sections = allSorted.map(([artist, cards, landCards]) => {
+  return allSorted.map(([artist, cards, landCards]) => {
     const mainImgs = cards.map(renderCard).join("");
     const landImgs = (landCards || []).map(renderCard).join("");
-    const hasMain = cards.length > 0;
+    if (!cards.length && !landCards?.length) return "";
+    const onlyLands = !cards.length && landCards?.length > 0;
     const hasLands = landCards && landCards.length > 0;
-    if (!hasMain && !hasLands) return "";
-    const onlyLands = !hasMain && hasLands;
     const classes = [onlyLands ? "lands-only" : "", hasLands ? "has-lands" : ""].filter(Boolean).join(" ");
     return `<details ${classes ? `class="${classes}"` : ""} open><summary><h2>${artist}</h2></summary><div class="grid">${mainImgs}${landImgs}</div></details>`;
   }).filter(Boolean).join("");
+}
 
-  const noticeHTML = useSpecificPrintings ? '<p class="notice">⚠ Specific printings not implemented yet — showing all printings.</p>' : '';
+function generateHTML(specificArtistCards, specificBasicLandCards, allArtistCards, allBasicLandCards) {
+  const hasSpecificData = specificArtistCards !== null;
+  const defaultArtistCards = hasSpecificData ? specificArtistCards : allArtistCards;
+  const defaultBasicLandCards = hasSpecificData ? specificBasicLandCards : allBasicLandCards;
+  const specificSections = buildSections(defaultArtistCards, defaultBasicLandCards);
+  const allSections = hasSpecificData ? buildSections(allArtistCards, allBasicLandCards) : "";
 
-  const hasSideboard = Object.values(artistCards).some(cards => cards.some(c => c.board === "sideboard"));
-  const hasConsidering = Object.values(artistCards).some(cards => cards.some(c => c.board === "considering"));
+  const checkCards = allArtistCards || defaultArtistCards;
+  const hasSideboard = Object.values(checkCards).some(cards => cards.some(c => c.board === "sideboard"));
+  const hasConsidering = Object.values(checkCards).some(cards => cards.some(c => c.board === "considering"));
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>SignatureHunter Results</title>
 <style>
@@ -52,7 +54,6 @@ function generateHTML(artistCards, useSpecificPrintings = false, basicLandCards 
   .filters button:hover:not(:disabled) { background: #1c2330; }
   .filters button.active { background: #1c2330; border-color: #6fffe9; color: #6fffe9; }
   .filters button:disabled { opacity: 0.3; cursor: not-allowed; }
-  .notice { text-align: center; color: #f0ad4e; background: #2a2000; padding: 0.75rem; border-radius: 8px; margin-bottom: 2rem; }
   details { margin-bottom: 1rem; border-radius: 10px; overflow: hidden; }
   summary { cursor: pointer; list-style: none; background: #161b22; padding: 1.2rem 1.5rem; display: flex; align-items: center; justify-content: center; position: relative; border-radius: 10px; transition: background 0.2s; }
   summary:hover { background: #1c2330; }
@@ -78,6 +79,7 @@ function generateHTML(artistCards, useSpecificPrintings = false, basicLandCards 
   body.land-mode details:not(.lands-only):not(.has-lands) { display: none; }
   body.land-mode .card:not(.basicland) { display: none !important; }
   body.land-mode .card.basicland { display: block !important; }
+  #view-all { display: none; }
 </style></head><body>
 <h1>Signature Hunter</h1>
 <p class="subtitle">Plan &bull; Your &bull; Meet</p>
@@ -85,28 +87,35 @@ function generateHTML(artistCards, useSpecificPrintings = false, basicLandCards 
   <button id="btn-sideboard" class="active" onclick="toggleFilter('sideboard')" ${hasSideboard ? '' : 'disabled'}>Show Sideboard</button>
   <button id="btn-considering" class="active" onclick="toggleFilter('considering')" ${hasConsidering ? '' : 'disabled'}>Show Considering</button>
   <button id="btn-landmode" onclick="toggleLandMode()">Basic Land Mode</button>
+  ${hasSpecificData ? '<button id="btn-specific" class="active" onclick="toggleSpecific()">Specific Printings</button>' : ''}
 </div>
-${noticeHTML}${sections}
+<div id="view-specific">${specificSections}</div>
+${hasSpecificData ? `<div id="view-all">${allSections}</div>` : ''}
 <script>
 const filters = { sideboard: true, considering: true };
 function toggleFilter(type) {
   filters[type] = !filters[type];
-  const btn = document.getElementById('btn-' + type);
-  btn.classList.toggle('active', filters[type]);
-  document.querySelectorAll('.card.' + type).forEach(el => {
-    el.classList.toggle('hidden', !filters[type]);
-  });
+  document.getElementById('btn-' + type).classList.toggle('active', filters[type]);
+  document.querySelectorAll('.card.' + type).forEach(el => el.classList.toggle('hidden', !filters[type]));
 }
 function toggleLandMode() {
   document.body.classList.toggle('land-mode');
   document.getElementById('btn-landmode').classList.toggle('active');
 }
+${hasSpecificData ? `
+let specific = true;
+function toggleSpecific() {
+  specific = !specific;
+  document.getElementById('btn-specific').classList.toggle('active', specific);
+  document.getElementById('view-specific').style.display = specific ? '' : 'none';
+  document.getElementById('view-all').style.display = specific ? 'none' : 'block';
+}` : ''}
 </script>
 </body></html>`;
 }
 
-export function serve(artistCards, port = 3000, useSpecificPrintings = false, basicLandCards = {}) {
-  const html = generateHTML(artistCards, useSpecificPrintings, basicLandCards);
+export function serve(specificArtistCards, port = 3000, specificBasicLandCards = null, allArtistCards = {}, allBasicLandCards = {}) {
+  const html = generateHTML(specificArtistCards, specificBasicLandCards, allArtistCards, allBasicLandCards);
   const server = http.createServer((req, res) => {
     res.writeHead(200, { "Content-Type": "text/html" });
     res.end(html);
