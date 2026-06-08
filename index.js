@@ -11,20 +11,22 @@ import { matchArtistCards, matchBasicLands } from "./src/matcher.js";
 
 const CANCEL = "__cancel__";
 const IMPORT = "__import__";
+const ALL = "__all__";
 
-let deckFile;
+let deckFiles;
 while (true) {
   const decklists = fs.readdirSync(DECKLISTS_DIR).filter((f) => f.endsWith(".txt"));
-  deckFile = await select({
+  const deckChoice = await select({
     message: "Select a decklist:",
     choices: [
       ...decklists.map((f) => ({ name: f, value: f })),
+      { name: chalk.magenta("★ All decklists"), value: ALL },
       { name: chalk.cyan("⟳ Import from Moxfield"), value: IMPORT },
       { name: chalk.red("Cancel & Exit"), value: CANCEL },
     ],
   });
-  if (deckFile === CANCEL) process.exit(0);
-  if (deckFile === IMPORT) {
+  if (deckChoice === CANCEL) process.exit(0);
+  if (deckChoice === IMPORT) {
     const { fetchDeck } = await import("./src/moxfield.js");
     const { input } = await import("@inquirer/prompts");
     const url = await input({ message: "Moxfield deck URL:" });
@@ -41,6 +43,11 @@ while (true) {
       } catch (e) { console.error(chalk.red(`✗ ${e.message}\n`)); }
     }
     continue;
+  }
+  if (deckChoice === ALL) {
+    deckFiles = fs.readdirSync(DECKLISTS_DIR).filter((f) => f.endsWith(".txt"));
+  } else {
+    deckFiles = [deckChoice];
   }
   break;
 }
@@ -61,11 +68,14 @@ const useSpecificPrintings = await select({
   ],
 });
 
-const rawCards = fs.readFileSync(path.join(DECKLISTS_DIR, deckFile), "utf-8").split("\n").map((l) => l.trim()).filter(Boolean);
+const rawCards = deckFiles.flatMap((f) =>
+  fs.readFileSync(path.join(DECKLISTS_DIR, f), "utf-8").split("\n").map((l) => l.trim()).filter(Boolean)
+);
+const seen = new Set();
 const cards = rawCards.map((l) => {
   const parts = l.split("|");
   return { name: parts[0], set: parts[1] || "", num: parts[2] || "", board: parts[3] || "mainboard" };
-});
+}).filter((c) => { if (seen.has(c.name)) return false; seen.add(c.name); return true; });
 const cardNames = cards.map((c) => c.name);
 const cardBoards = Object.fromEntries(cards.map((c) => [c.name, c.board]));
 const cardPrintings = Object.fromEntries(cards.filter((c) => c.set && c.num).map((c) => [c.name, { set: c.set, num: c.num }]));
