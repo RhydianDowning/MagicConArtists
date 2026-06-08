@@ -7,17 +7,45 @@ import chalk from "chalk";
 import { DECKLISTS_DIR, ARTISTS_DIR, BASIC_LANDS, DATA_DIR } from "./src/config.js";
 import { getArtists, isCached } from "./src/scryfall.js";
 import { printResults, printIgnored } from "./src/display.js";
+import { matchArtistCards, matchBasicLands } from "./src/matcher.js";
 
 const CANCEL = "__cancel__";
+const IMPORT = "__import__";
 
-const decklists = fs.readdirSync(DECKLISTS_DIR).filter((f) => f.endsWith(".txt"));
+let deckFile;
+while (true) {
+  const decklists = fs.readdirSync(DECKLISTS_DIR).filter((f) => f.endsWith(".txt"));
+  deckFile = await select({
+    message: "Select a decklist:",
+    choices: [
+      ...decklists.map((f) => ({ name: f, value: f })),
+      { name: chalk.cyan("⟳ Import from Moxfield"), value: IMPORT },
+      { name: chalk.red("Cancel & Exit"), value: CANCEL },
+    ],
+  });
+  if (deckFile === CANCEL) process.exit(0);
+  if (deckFile === IMPORT) {
+    const { fetchDeck } = await import("./src/moxfield.js");
+    const { input } = await import("@inquirer/prompts");
+    const url = await input({ message: "Moxfield deck URL:" });
+    if (url) {
+      console.log(chalk.dim("Opening Chrome to fetch deck from Moxfield..."));
+      try {
+        const { name, cards } = await fetchDeck(url);
+        const filename = name.replace(/[/\\?%*:|"<>]/g, "_") + ".txt";
+        const seen = new Set();
+        const lines = cards.filter((c) => { if (seen.has(c.name)) return false; seen.add(c.name); return true; })
+          .map((c) => `${c.name}|${c.set || ""}|${c.num || ""}|${c.board || "mainboard"}`);
+        fs.writeFileSync(path.join(DECKLISTS_DIR, filename), lines.join("\n") + "\n");
+        console.log(chalk.green(`✓ Saved ${lines.length} unique cards to ${filename}\n`));
+      } catch (e) { console.error(chalk.red(`✗ ${e.message}\n`)); }
+    }
+    continue;
+  }
+  break;
+}
+
 const artistFiles = fs.readdirSync(ARTISTS_DIR).filter((f) => f.endsWith(".txt"));
-
-const deckFile = await select({
-  message: "Select a decklist:",
-  choices: [...decklists.map((f) => ({ name: f, value: f })), { name: chalk.red("Cancel & Exit"), value: CANCEL }],
-});
-if (deckFile === CANCEL) process.exit(0);
 
 const artistFile = await select({
   message: "Select an artist list:",
@@ -101,31 +129,10 @@ const viewChoice = await select({
 });
 
 // Process all cards from cache
-const artistCards = {};
-for (const card of filteredCards) {
-  const results = await getArtists(card);
-  const board = cardBoards[card] || "mainboard";
-  for (const { artist, set, num, image, url } of results) {
-    if (myArtists.some((a) => artist.toLowerCase().includes(a.toLowerCase()))) {
-      if (!artistCards[artist]) artistCards[artist] = [];
-      if (!artistCards[artist].some((e) => e.card === card && e.set === set && e.num === num)) {
-        artistCards[artist].push({ card, set, num, image, url, board });
-      }
-    }
-  }
-}
+const artistCards = await matchArtistCards(filteredCards, cardBoards, myArtists);
 
 // Load basic land data from pre-fetched files
-const basicLandCards = {};
-for (const land of BASIC_LANDS) {
-  const landData = JSON.parse(fs.readFileSync(path.join(DATA_DIR, `${land}.json`), "utf-8"));
-  for (const { artist, set, num, image, url } of landData) {
-    if (myArtists.some((a) => artist.toLowerCase().includes(a.toLowerCase()))) {
-      if (!basicLandCards[artist]) basicLandCards[artist] = [];
-      basicLandCards[artist].push({ card: land.charAt(0).toUpperCase() + land.slice(1), set, num, image, url, board: "basicland" });
-    }
-  }
-}
+const basicLandCards = matchBasicLands(myArtists);
 
 if (viewChoice === "terminal") {
   console.log();
