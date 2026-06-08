@@ -1,10 +1,32 @@
 #!/usr/bin/env node
-const fs = require("fs");
-const { DECKLIST_PATH, ARTISTS_PATH, BASIC_LANDS } = require("./src/config");
-const { getArtists } = require("./src/scryfall");
+import fs from "fs";
+import path from "path";
+import select from "@inquirer/select";
+import cliProgress from "cli-progress";
+import chalk from "chalk";
+import { DECKLISTS_DIR, ARTISTS_DIR, BASIC_LANDS } from "./src/config.js";
+import { getArtists, isCached } from "./src/scryfall.js";
+import { printResults, printIgnored } from "./src/display.js";
 
-const cards = fs.readFileSync(DECKLIST_PATH, "utf-8").split("\n").map((l) => l.trim()).filter(Boolean);
-const myArtists = fs.readFileSync(ARTISTS_PATH, "utf-8").split("\n").map((l) => l.trim()).filter(Boolean);
+const CANCEL = "__cancel__";
+
+const decklists = fs.readdirSync(DECKLISTS_DIR).filter((f) => f.endsWith(".txt"));
+const artistFiles = fs.readdirSync(ARTISTS_DIR).filter((f) => f.endsWith(".txt"));
+
+const deckFile = await select({
+  message: "Select a decklist:",
+  choices: [...decklists.map((f) => ({ name: f, value: f })), { name: chalk.red("Cancel & Exit"), value: CANCEL }],
+});
+if (deckFile === CANCEL) process.exit(0);
+
+const artistFile = await select({
+  message: "Select an artist list:",
+  choices: [...artistFiles.map((f) => ({ name: f, value: f })), { name: chalk.red("Cancel & Exit"), value: CANCEL }],
+});
+if (artistFile === CANCEL) process.exit(0);
+
+const cards = fs.readFileSync(path.join(DECKLISTS_DIR, deckFile), "utf-8").split("\n").map((l) => l.trim()).filter(Boolean);
+const myArtists = fs.readFileSync(path.join(ARTISTS_DIR, artistFile), "utf-8").split("\n").map((l) => l.trim()).filter(Boolean);
 
 const ignoredLands = {};
 const filteredCards = cards.filter((c) => {
@@ -15,31 +37,55 @@ const filteredCards = cards.filter((c) => {
   return true;
 });
 
-(async () => {
-  const artistCards = {};
+// Split into cached and uncached
+const cachedCards = filteredCards.filter((c) => isCached(c));
+const uncachedCards = filteredCards.filter((c) => !isCached(c));
 
-  for (let i = 0; i < filteredCards.length; i++) {
-    const card = filteredCards[i];
-    console.error(`[${i + 1}/${filteredCards.length}] Fetching: ${card}`);
-    const results = await getArtists(card);
-    for (const { artist, set, num } of results) {
-      if (myArtists.some((a) => artist.toLowerCase().includes(a.toLowerCase()))) {
-        if (!artistCards[artist]) artistCards[artist] = [];
-        if (!artistCards[artist].some((e) => e.card === card && e.set === set && e.num === num)) {
-          artistCards[artist].push({ card, set, num });
-        }
+console.log();
+console.log(chalk.green(`✓ ${cachedCards.length}/${filteredCards.length} cached results found`));
+if (uncachedCards.length > 0) {
+  console.log(chalk.yellow(`⟳ Fetching ${uncachedCards.length} new card(s) from Scryfall...\n`));
+
+  const bar = new cliProgress.SingleBar({
+    format: chalk.cyan("{bar}") + " {percentage}% | {value}/{total} | " + chalk.dim("{card}"),
+    barCompleteChar: "\u2588",
+    barIncompleteChar: "\u2591",
+    hideCursor: true,
+  }, cliProgress.Presets.shades_classic);
+
+  bar.start(uncachedCards.length, 0, { card: "" });
+  for (let i = 0; i < uncachedCards.length; i++) {
+    bar.update(i, { card: uncachedCards[i] });
+    await getArtists(uncachedCards[i]);
+    bar.update(i + 1, { card: uncachedCards[i] });
+  }
+  bar.stop();
+  console.log(chalk.green("\n✓ All cards fetched and cached."));
+} else {
+  console.log(chalk.green("✓ All cards already cached — no API calls needed."));
+}
+
+// Prompt to view results
+console.log();
+await select({
+  message: "Ready to display results",
+  choices: [{ name: "View results", value: "view" }],
+});
+
+// Process all cards from cache
+const artistCards = {};
+for (const card of filteredCards) {
+  const results = await getArtists(card);
+  for (const { artist, set, num } of results) {
+    if (myArtists.some((a) => artist.toLowerCase().includes(a.toLowerCase()))) {
+      if (!artistCards[artist]) artistCards[artist] = [];
+      if (!artistCards[artist].some((e) => e.card === card && e.set === set && e.num === num)) {
+        artistCards[artist].push({ card, set, num });
       }
     }
   }
+}
 
-  for (const [artist, cardList] of Object.entries(artistCards)) {
-    console.log(`${artist}:`);
-    cardList.forEach((e, i) => console.log(`  ${i + 1}) ${e.card} - ${e.set} #${e.num}`));
-    console.log();
-  }
-
-  if (Object.keys(ignoredLands).length > 0) {
-    const parts = Object.entries(ignoredLands).map(([name, count]) => `${count} [ ${name} ]`);
-    console.log(`Basic lands are not searched, therefore: Ignored ${parts.join(" and ")}`);
-  }
-})();
+console.log();
+printResults(artistCards);
+printIgnored(ignoredLands);
