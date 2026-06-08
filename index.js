@@ -81,8 +81,8 @@ console.log();
 const viewChoice = await select({
   message: "How would you like to view results?",
   choices: [
-    { name: "View in terminal", value: "terminal" },
-    { name: "View in browser", value: "browser" },
+    { name: "View in browser (Images)", value: "browser" },
+    { name: "View in terminal (List)", value: "terminal" },
   ],
 });
 
