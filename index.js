@@ -1,54 +1,13 @@
 const fs = require("fs");
-const path = require("path");
+const { DECKLIST_PATH, ARTISTS_PATH, BASIC_LANDS } = require("./src/config");
+const { getArtists } = require("./src/scryfall");
 
-const cards = fs
-  .readFileSync(path.join(__dirname, "decklist.txt"), "utf-8")
-  .split("\n")
-  .map((l) => l.trim())
-  .filter(Boolean);
+const cards = fs.readFileSync(DECKLIST_PATH, "utf-8").split("\n").map((l) => l.trim()).filter(Boolean);
+const myArtists = fs.readFileSync(ARTISTS_PATH, "utf-8").split("\n").map((l) => l.trim()).filter(Boolean);
 
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-let requestCount = 0;
-
-async function getArtists(name) {
-  const url = `https://api.scryfall.com/cards/search?q=!"${encodeURIComponent(name)}"&unique=art`;
-  const results = [];
-  let nextPage = url;
-
-  while (nextPage) {
-    if (requestCount > 0 && requestCount % 5 === 0) await sleep(3000);
-    requestCount++;
-    const res = await fetch(nextPage, {
-      headers: { "User-Agent": "ScryfallArtists/1.0" },
-    });
-    if (res.status === 429) {
-      console.error(`  Rate limited, waiting 30s...`);
-      await sleep(30000);
-      continue;
-    }
-    if (!res.ok) {
-      console.error(`Could not find: ${name}`);
-      return [];
-    }
-    const data = await res.json();
-    data.data.forEach((card) => results.push({ artist: card.artist, set: card.set.toUpperCase(), num: card.collector_number }));
-    nextPage = data.has_more ? data.next_page : null;
-  }
-
-  return results;
-}
-
-const myArtists = fs
-  .readFileSync(path.join(__dirname, "artists.txt"), "utf-8")
-  .split("\n")
-  .map((l) => l.trim())
-  .filter(Boolean);
-
-const BASIC_LANDS = ["island", "mountain", "plains", "swamp", "forest"];
 const ignoredLands = {};
 const filteredCards = cards.filter((c) => {
-  const lower = c.toLowerCase();
-  if (BASIC_LANDS.includes(lower)) {
+  if (BASIC_LANDS.includes(c.toLowerCase())) {
     ignoredLands[c] = (ignoredLands[c] || 0) + 1;
     return false;
   }
