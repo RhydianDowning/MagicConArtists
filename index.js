@@ -46,18 +46,29 @@ console.log(chalk.green(`✓ ${cachedCards.length}/${filteredCards.length} cache
 if (uncachedCards.length > 0) {
   console.log(chalk.yellow(`⟳ Fetching ${uncachedCards.length} new card(s) from Scryfall...\n`));
 
+  const barFormat = (options, params, payload) => {
+    const color = payload.rateLimited ? chalk.yellow : chalk.cyan;
+    const label = payload.rateLimited ? "30 second Timeout due to Scryfall Rate Limits" : payload.card;
+    return color("{bar}").replace("{bar}", options.barCompleteChar.repeat(Math.round(params.progress * options.barsize)) + options.barIncompleteChar.repeat(options.barsize - Math.round(params.progress * options.barsize)))
+      + ` ${Math.round(params.progress * 100)}% | ${params.value}/${params.total} | ` + chalk.dim(label);
+  };
+
   const bar = new cliProgress.SingleBar({
-    format: chalk.cyan("{bar}") + " {percentage}% | {value}/{total} | " + chalk.dim("{card}"),
+    format: barFormat,
     barCompleteChar: "\u2588",
     barIncompleteChar: "\u2591",
     hideCursor: true,
-  }, cliProgress.Presets.shades_classic);
+    barsize: 30,
+  });
 
-  bar.start(uncachedCards.length, 0, { card: "" });
+  bar.start(uncachedCards.length, 0, { card: "", rateLimited: false });
   for (let i = 0; i < uncachedCards.length; i++) {
-    bar.update(i, { card: uncachedCards[i] });
-    await getArtists(uncachedCards[i]);
-    bar.update(i + 1, { card: uncachedCards[i] });
+    bar.update(i, { card: uncachedCards[i], rateLimited: false });
+    await getArtists(uncachedCards[i], {
+      onRateLimit: () => bar.update(i, { card: uncachedCards[i], rateLimited: true }),
+      onResume: () => bar.update(i, { card: uncachedCards[i], rateLimited: false }),
+    });
+    bar.update(i + 1, { card: uncachedCards[i], rateLimited: false });
   }
   bar.stop();
   console.log(chalk.green("\n✓ All cards fetched and cached."));

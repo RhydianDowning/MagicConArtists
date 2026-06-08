@@ -7,7 +7,7 @@ export function isCached(name) {
   return readCache(name) !== null;
 }
 
-export async function getArtists(name) {
+export async function getArtists(name, { onRateLimit, onResume } = {}) {
   const cached = readCache(name);
   if (cached) return cached;
 
@@ -21,7 +21,9 @@ export async function getArtists(name) {
       headers: { "User-Agent": USER_AGENT },
     });
     if (res.status === 429) {
-      await sleep(30000);
+      if (onRateLimit) onRateLimit();
+      await sleep(31000);
+      if (onResume) onResume();
       continue;
     }
     if (!res.ok) return [];
