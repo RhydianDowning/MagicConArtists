@@ -1,11 +1,10 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, session } from "electron";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import { DECKLISTS_DIR, ARTISTS_DIR, USER_ARTISTS_DIR, BASIC_LANDS } from "../src/config.js";
 import { getArtists, isCached } from "../src/scryfall.js";
 import { matchArtistCards, matchBasicLands } from "../src/matcher.js";
-import { fetchDeck } from "../src/moxfield.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -33,7 +32,79 @@ ipcMain.handle("get-decklists", () =>
 );
 
 ipcMain.handle("import-moxfield", async (event, url) => {
-  const { name, cards } = await fetchDeck(url);
+  const publicId = url.split("/").pop();
+
+  const win = new BrowserWindow({
+    width: 400,
+    height: 300,
+    show: false,
+    webPreferences: { nodeIntegration: false, contextIsolation: true },
+  });
+
+  let deckData = null;
+
+  // Intercept the deck API response
+  session.defaultSession.webRequest.onCompleted({ urls: ["*://*.moxfield.com/*"] }, (details) => {});
+  win.webContents.session.webRequest.onBeforeRequest({ urls: ["*://*.moxfield.com/*"] }, (details, callback) => {
+    callback({ cancel: false });
+  });
+
+  const responsePromise = new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => reject(new Error("Timed out waiting for deck data")), 45000);
+
+    win.webContents.session.webRequest.onCompleted({ urls: ["*://*.moxfield.com/*"] }, async (details) => {
+      if (details.url.includes(`/decks/all/${publicId}`) && details.statusCode === 200) {
+        // We got the response, now fetch it from the renderer
+        try {
+          const json = await win.webContents.executeJavaScript(
+            `fetch("${details.url}", { credentials: "include" }).then(r => r.json())`
+          );
+          deckData = json;
+          clearTimeout(timeout);
+          resolve();
+        } catch {}
+      }
+    });
+
+    win.loadURL(url).catch(reject);
+
+    // Fallback: wait a bit then try fetching directly from the page context
+    setTimeout(async () => {
+      if (deckData) return;
+      try {
+        const json = await win.webContents.executeJavaScript(
+          `fetch("https://api2.moxfield.com/v3/decks/all/${publicId}", { credentials: "include" }).then(r => r.ok ? r.json() : null)`
+        );
+        if (json) { deckData = json; clearTimeout(timeout); resolve(); }
+      } catch {}
+    }, 10000);
+  });
+
+  try {
+    await responsePromise;
+  } finally {
+    win.destroy();
+  }
+
+  if (!deckData) throw new Error("Could not fetch deck data. The page may be private or Cloudflare blocked us.");
+
+  const cards = [];
+  const boards = deckData.boards || {};
+  for (const section of ["commanders", "mainboard", "sideboard", "companions", "maybeboard"]) {
+    const board = section === "maybeboard" ? "considering" : section === "sideboard" ? "sideboard" : "mainboard";
+    for (const [, entry] of Object.entries(boards[section]?.cards || {})) {
+      if (entry?.card?.name) {
+        cards.push({
+          name: entry.card.name,
+          set: entry.card.set?.toUpperCase() || "",
+          num: entry.card.collector_number || entry.card.cn || "",
+          board,
+        });
+      }
+    }
+  }
+
+  const name = deckData.name || publicId;
   const filename = name.replace(/[/\\?%*:|"<>]/g, "_") + ".txt";
   const seen = new Set();
   const lines = cards.filter((c) => { if (seen.has(c.name)) return false; seen.add(c.name); return true; })

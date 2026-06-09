@@ -126,7 +126,7 @@ async function importMoxfield() {
   const url = urlInput.value.trim();
   if (!url) return;
   document.getElementById("import-btn").disabled = true;
-  status.textContent = "Opening Chrome to fetch deck...";
+  status.textContent = "Fetching deck from moxfield...";
   try {
     const { filename, count } = await window.api.importMoxfield(url);
     status.textContent = `✓ Saved ${count} cards to ${filename}`;
