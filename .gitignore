@@ -3,3 +3,5 @@ localStorage/Decklists/*
 localStorage/CardArtists/*
 !localStorage/Decklists/.gitkeep
 !localStorage/CardArtists/.gitkeep
+dist/
+.DS_Store

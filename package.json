@@ -4,13 +4,40 @@
   "description": "Find which artists from an event have illustrated cards in your MTG decklists",
   "main": "electron/main.js",
   "scripts": {
-    "start": "electron electron/main.js"
+    "start": "electron electron/main.js",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win",
+    "build:all": "electron-builder --mac --win"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
-  "dependencies": {
-    "electron": "35.1.2"
+  "build": {
+    "appId": "com.signaturehunter.app",
+    "productName": "SignatureHunter",
+    "files": [
+      "electron/**/*",
+      "src/**/*"
+    ],
+    "extraResources": [
+      { "from": "data", "to": "data" },
+      { "from": "artistLists", "to": "artistLists" }
+    ],
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.utilities"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": true,
+      "allowToChangeInstallationDirectory": false
+    }
+  },
+  "devDependencies": {
+    "electron": "35.1.2",
+    "electron-builder": "^25.1.8"
   }
 }

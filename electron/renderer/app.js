@@ -2,6 +2,10 @@
 function renderDeckList(decks) {
   const decksEl = document.getElementById("decks");
   decksEl.innerHTML = "";
+  if (decks.length === 0) {
+    decksEl.innerHTML = `<p class="empty-state">Import a deck from Moxfield below to get started.</p>`;
+    return;
+  }
   decks.forEach((f) => {
     const escaped = f.replace(/'/g, "\\'");
     decksEl.innerHTML += `<label><input type="checkbox" name="deck" value="${f}"> ${f.replace(/\.txt$/, "")}<span class="delete-btn" onclick="deleteDeck(event, '${escaped}')">✕</span></label>`;
@@ -31,9 +35,9 @@ window.api.onProgress((data) => {
     el.innerHTML = `<span style="color:#f0883e">⏳ Rate limited by Scryfall — waiting 30s...</span><div class="progress-bar"><div class="progress-bar-fill" style="width:${Math.round((data.current / data.fetching) * 100)}%;background:#f0883e"></div></div>`;
   } else if (data.current) {
     const pct = Math.round((data.current / data.fetching) * 100);
-    el.innerHTML = `Fetching ${data.current}/${data.fetching}: ${data.card}<div class="progress-bar"><div class="progress-bar-fill" style="width:${pct}%"></div></div>`;
+    el.innerHTML = `Fetching ${data.current}/${data.fetching}: ${data.card}<div class="progress-bar"><div class="progress-bar-fill" style="width:${pct}%"></div></div><p class="fetch-hint">First fetch is ~1s per card due to rate limits. Subsequent searches will be instant.</p>`;
   } else {
-    el.textContent = `${data.cached}/${data.total} cached. Fetching ${data.fetching} from Scryfall...`;
+    el.innerHTML = `${data.cached}/${data.total} cached. Fetching ${data.fetching} from Scryfall...`;
   }
 });
 
