@@ -25,6 +25,18 @@
     .import-row input { flex: 1; padding: 0.5rem; background: #161b22; border: 1px solid #30363d; color: #e6edf3; border-radius: 6px; font-size: 0.85rem; }
     .import-row button { margin-top: 0; width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; }
     #import-status { font-size: 0.8rem; margin-top: 0.3rem; color: #6fffe9; }
+    .hint { font-size: 0.75rem; color: #8b949e; margin: 0.3rem 0 0; line-height: 1.4; }
+    .hint code { background: #161b22; padding: 0.1rem 0.3rem; border-radius: 3px; color: #e6edf3; }
+    #deck-save-status { font-size: 0.8rem; margin-top: 0.3rem; color: #6fffe9; }
+    .secondary-btn { background: #161b22; border: 1px solid #30363d; color: #e6edf3; margin-top: 0.5rem; }
+    .secondary-btn:hover { background: #1c2330; }
+    #new-artist-form input[type="text"], #new-deck-form input[type="text"] { width: 100%; padding: 0.5rem; background: #161b22; border: 1px solid #30363d; color: #e6edf3; border-radius: 6px; font-size: 0.85rem; margin-top: 0.3rem; }
+    #new-artist-form textarea, #new-deck-form textarea { width: 100%; padding: 0.5rem; background: #161b22; border: 1px solid #30363d; color: #e6edf3; border-radius: 6px; font-size: 0.85rem; margin-top: 0.3rem; resize: vertical; font-family: inherit; }
+    .artist-entry { display: flex; gap: 0.5rem; margin-top: 0.4rem; align-items: center; }
+    .artist-entry input { flex: 1; padding: 0.5rem; background: #161b22; border: 1px solid #30363d; color: #e6edf3; border-radius: 6px; font-size: 0.85rem; }
+    .artist-entry .delete-btn { opacity: 1; position: static; margin-left: 0; }
+    #artist-entries { max-height: 200px; overflow-y: auto; }
+    #artist-list-status { font-size: 0.8rem; margin-top: 0.3rem; color: #6fffe9; }
 
     /* Progress */
     #progress { text-align: center; margin-top: 1rem; font-size: 0.85rem; color: #8b949e; }
@@ -79,9 +91,32 @@
       <button type="button" id="import-btn" onclick="importMoxfield()">Import</button>
     </div>
     <div id="import-status"></div>
+    <button type="button" class="secondary-btn" onclick="toggleNewDeckForm()">+ Manual Decklist Import</button>
+    <div id="new-deck-form" class="hidden">
+      <label>Deck Name:</label>
+      <input type="text" id="deck-name" placeholder="e.g. Mono Red Burn">
+      <label>Paste your decklist:</label>
+      <p class="hint">Accepts plain card names or Moxfield-style format.<br>e.g. <code>Lightning Bolt</code> or <code>1 Lightning Bolt (LEB) 162</code></p>
+      <textarea id="deck-bulk" rows="4" placeholder="Lightning Bolt&#10;4 Dark Ritual (LEA) 98&#10;Counterspell"></textarea>
+      <button type="button" onclick="saveDeck()">Save Decklist</button>
+      <div id="deck-save-status"></div>
+    </div>
 
     <label>Artist List:</label>
     <div id="artists" class="checkbox-group"></div>
+    <button type="button" class="secondary-btn" onclick="toggleNewArtistForm()">+ New Artist List</button>
+    <div id="new-artist-form" class="hidden">
+      <label>List Name:</label>
+      <input type="text" id="artist-list-name" placeholder="e.g. MagicCon Amsterdam 2026">
+      <label>Mass Import (newline separated):</label>
+      <textarea id="artist-bulk" rows="4" placeholder="Artist One&#10;Artist Two&#10;Artist Three"></textarea>
+      <button type="button" class="secondary-btn" onclick="bulkImportArtists()">Import Names</button>
+      <label>Artists:</label>
+      <div id="artist-entries"></div>
+      <button type="button" class="secondary-btn" onclick="addArtistRow()">+ Add Artist</button>
+      <button type="button" onclick="saveArtistList()">Save Artist List</button>
+      <div id="artist-list-status"></div>
+    </div>
 
     <button id="run-btn" onclick="runMatch()">Find Matches</button>
     <div id="progress"></div>
