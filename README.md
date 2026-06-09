@@ -68,7 +68,7 @@ npm start
 - [x] Solution for updating/invalidating cache
 - [x] Ctrl-F / find function within the results page
 - [ ] Card count per artist in results header
-- [ ] Option to sort artists by card count (mainboard) instead of alphabetical
+- [x] Option to sort artists by card count (mainboard) instead of alphabetical
 - [ ] Show number of decks a card appears in
 - [ ] Export results (PDF/image for use at event)
 - [ ] Light/dark mode toggle

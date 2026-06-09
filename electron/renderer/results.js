@@ -3,6 +3,7 @@
 let resultData = null;
 const filters = { sideboard: true, considering: false };
 let specific = false;
+let sortByCount = false;
 
 function renderResults(data) {
   resultData = data;
@@ -25,6 +26,7 @@ function renderResults(data) {
   html += `<button id="btn-considering" class="" onclick="toggleFilter('considering')" ${hasConsidering ? "" : "disabled"}>Show Considering</button>`;
   html += `<button id="btn-landmode" onclick="toggleLandMode()">Basic Land Mode</button>`;
   if (hasSpecific) html += `<button id="btn-specific" onclick="toggleSpecific()">Specific Printings</button>`;
+  html += `<span class="sort-control"><span class="sort-label">Sort:</span><span class="sort-option ${!sortByCount ? 'active' : ''}" onclick="changeSort('alpha')">A–Z</span><span class="sort-option ${sortByCount ? 'active' : ''}" onclick="changeSort('count')">Count</span></span>`;
   html += `</div>`;
   html += `<div id="card-sections"></div>`;
   if (noMatch && noMatch.length) {
@@ -36,8 +38,24 @@ function renderResults(data) {
 }
 
 function renderSections(artistCards, basicLandCards, artistBooths) {
+  // Save open/closed state
+  const openState = {};
+  document.querySelectorAll("#card-sections details").forEach((el) => {
+    const name = el.querySelector("h2")?.textContent;
+    if (name) openState[name] = el.open;
+  });
+
   const allArtists = new Set([...Object.keys(artistCards), ...Object.keys(basicLandCards)]);
-  const sorted = [...allArtists].sort();
+  let sorted;
+  if (sortByCount) {
+    sorted = [...allArtists].sort((a, b) => {
+      const aCount = (artistCards[a] || []).filter(c => c.board === "mainboard").length;
+      const bCount = (artistCards[b] || []).filter(c => c.board === "mainboard").length;
+      return bCount - aCount || a.localeCompare(b);
+    });
+  } else {
+    sorted = [...allArtists].sort();
+  }
   let html = "";
   for (const artist of sorted) {
     const cards = artistCards[artist] || [];
@@ -47,7 +65,8 @@ function renderSections(artistCards, basicLandCards, artistBooths) {
     const hasLands = lands.length > 0;
     const classes = [onlyLands ? "lands-only" : "", hasLands ? "has-lands" : ""].filter(Boolean).join(" ");
     const booth = artistBooths[artist] ? `<span class="booth">${artistBooths[artist]}</span>` : "";
-    html += `<details ${classes ? `class="${classes}"` : ""} open><summary><h2>${artist}${booth}</h2></summary><div class="grid">`;
+    const isOpen = (artist in openState) ? openState[artist] : true;
+    html += `<details ${classes ? `class="${classes}"` : ""} ${isOpen ? "open" : ""}><summary><h2>${artist}${booth}</h2></summary><div class="grid">`;
     for (const c of cards) {
       const cls = c.board !== "mainboard" ? ` ${c.board}${c.board === "considering" ? " hidden" : ""}` : "";
       const boardLabel = (c.board === "sideboard" || c.board === "considering") ? `<span class="board-label">from ${c.board}</span>` : "";
@@ -79,8 +98,17 @@ function toggleSpecific() {
   renderSections(specific ? specificArtistCards : allArtistCards, specific ? specificBasicLandCards : allBasicLandCards, artistBooths);
 }
 
+function changeSort(value) {
+  sortByCount = value === "count";
+  document.querySelectorAll(".sort-option").forEach(el => el.classList.remove("active"));
+  document.querySelector(`.sort-option[onclick*="'${value}'"]`).classList.add("active");
+  const { specificArtistCards, specificBasicLandCards, allArtistCards, allBasicLandCards, artistBooths } = resultData;
+  renderSections(specific ? specificArtistCards : allArtistCards, specific ? specificBasicLandCards : allBasicLandCards, artistBooths);
+}
+
 // Expose globally
 window.renderResults = renderResults;
 window.toggleFilter = toggleFilter;
 window.toggleLandMode = toggleLandMode;
 window.toggleSpecific = toggleSpecific;
+window.changeSort = changeSort;
