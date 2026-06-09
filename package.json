@@ -1,27 +1,16 @@
 {
-  "name": "scryfallartists",
+  "name": "signature-hunter",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "bin": {
-    "signatureHunter": "./index.js",
-    "DecklistImport": "./import.js"
-  },
+  "description": "Find which artists from an event have illustrated cards in your MTG decklists",
+  "main": "electron/main.js",
   "scripts": {
-    "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "electron electron/main.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "@inquirer/prompts": "^7.10.1",
-    "@inquirer/select": "^4.4.2",
-    "boxen": "^7.1.1",
-    "chalk": "^5.6.2",
-    "cli-progress": "^3.12.0",
-    "moxfield-api": "^1.0.2",
-    "puppeteer-core": "^23.11.1"
+    "electron": "35.1.2"
   }
 }

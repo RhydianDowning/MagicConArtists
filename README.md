@@ -5,67 +5,58 @@ Find which artists from an event have illustrated cards in your MTG decklists �
 ## Quick Start
 
 ```bash
-# Clone the repo
+
 git clone https://github.com/RhydianDowning/MagicConArtists.git
 cd ScryfallArtists
-
-# Install dependencies
 npm install
-
-# Link the commands globally
-npm link
-
-# Run it
-signatureHunter
+npm start
 ```
 
 ## Requirements
 
-- **Node.js 18+** (for built-in fetch)
-- **Google Chrome** (only needed for Moxfield import)
-
-## Commands
-
-| Command | Description |
-|---------|-------------|
-| `signatureHunter` | Main tool — select a decklist & artist list, view matching card arts |
-| `DecklistImport` | Import a deck from Moxfield URL |
+- **Node.js 18+**
 
 ## How It Works
 
-1. Select a decklist (or import one from Moxfield, or choose all)
-2. Select an artist list (e.g. MagicCon Amsterdam 2026)
-3. The tool checks Scryfall for every printing of each card
+1. Select one or more decklists (or import from Moxfield / paste manually)
+2. Select an artist list (or create your own)
+3. The app checks Scryfall for every printing of each card
 4. It matches card artists against your event artist list
-5. View results in terminal or browser with card art images
+5. View results with card art images, set codes, and booth numbers
 
-## Adding Your Own Data
+## Features
 
-**Decklists:** Add `.txt` files to `localStorage/Decklists/` — one card name per line.
+- **Moxfield Import** — paste a Moxfield URL to import a deck (uses Electron's built-in Chromium, no Chrome needed)
+- **Manual Decklist Import** — paste a card list in any common format
+- **Artist List Management** — create custom artist lists with booth/location info, or mass-import names
+- **Filters** — toggle sideboard, considering, basic land mode, and specific printings
+- **Scryfall Caching** — first fetch is ~1 req/sec due to rate limits, subsequent runs are instant
 
-**Artist lists:** Add `.txt` files to `artistLists/` — format is `Artist Name|Booth Number` (booth is optional).
+## Adding Data
 
-## First Run
+**Decklists:** Import via the app (Moxfield or manual paste), or add `.txt` files to `localStorage/Decklists/`.
 
-The first run will fetch card data from Scryfall (cached locally after that). Expect ~1 request per second due to rate limits. Subsequent runs are instant for cached cards.
+**Artist lists:** Create via the app, or add `.txt` files to `localStorage/ArtistLists/` — format is `Artist Name|Booth Number` (booth is optional).
 
 ## Project Structure
 
 ```
-├── index.js              # Main entry point (TUI)
-├── import.js             # Moxfield deck importer
+├── electron/
+│   ├── main.js           # Electron main process + IPC handlers
+│   ├── preload.js        # Context bridge
+│   └── renderer/
+│       ├── index.html    # UI
+│       └── app.js        # Frontend logic
 ├── src/
 │   ├── config.js         # Paths & constants
 │   ├── cache.js          # Local file cache
 │   ├── scryfall.js       # Scryfall API + rate limiting
-│   ├── matcher.js        # Artist/card matching logic
-│   ├── display.js        # Terminal output formatting
-│   ├── server.js         # HTML page generation & local server
-│   └── moxfield.js       # Moxfield deck fetcher (puppeteer)
-├── data/                 # Pre-fetched basic land data (committed)
-├── artistLists/          # Event artist lists (committed)
-├── localStorage/         # User data - decklists & cache (gitignored)
+│   └── matcher.js        # Artist/card matching logic
+├── data/                 # Pre-fetched basic land data
+├── artistLists/          # Bundled artist lists (shipped with app)
+├── localStorage/         # User data (gitignored)
 │   ├── Decklists/
+│   ├── ArtistLists/
 │   └── CardArtists/
 └── scripts/              # Utility scripts
 ```
