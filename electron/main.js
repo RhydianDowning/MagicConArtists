@@ -2,9 +2,9 @@ import { app, BrowserWindow, ipcMain, session } from "electron";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
-import { ARTISTS_DIR, BASIC_LANDS } from "../src/config.js";
+import { BASIC_LANDS } from "../src/config.js";
 import { getArtists, isCached } from "../src/scryfall.js";
-import { matchArtistCards, matchBasicLands } from "../src/matcher.js";
+import { matchArtistCards, matchBasicLands, setDataDir } from "../src/matcher.js";
 import { setCacheDir } from "../src/cache.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -15,12 +15,15 @@ const userDataRoot = isPackaged ? app.getPath("userData") : path.join(__dirname,
 const DECKLISTS_DIR = path.join(userDataRoot, "localStorage", "Decklists");
 const USER_ARTISTS_DIR = path.join(userDataRoot, "localStorage", "ArtistLists");
 const CACHE_DIR = path.join(userDataRoot, "localStorage", "CardArtists");
+const ARTISTS_DIR = isPackaged ? path.join(process.resourcesPath, "artistLists") : path.join(__dirname, "..", "artistLists");
+const DATA_DIR = isPackaged ? path.join(process.resourcesPath, "data") : path.join(__dirname, "..", "data");
 
 function createWindow() {
   fs.mkdirSync(DECKLISTS_DIR, { recursive: true });
   fs.mkdirSync(USER_ARTISTS_DIR, { recursive: true });
   fs.mkdirSync(CACHE_DIR, { recursive: true });
   setCacheDir(CACHE_DIR);
+  setDataDir(DATA_DIR);
   const win = new BrowserWindow({
     width: 1100,
     height: 800,

@@ -1,7 +1,10 @@
 import fs from "fs";
 import path from "path";
-import { DATA_DIR, BASIC_LANDS } from "./config.js";
+import { DATA_DIR as DEFAULT_DATA_DIR, BASIC_LANDS } from "./config.js";
 import { getArtists } from "./scryfall.js";
+
+let dataDir = DEFAULT_DATA_DIR;
+export function setDataDir(dir) { dataDir = dir; }
 
 function artistMatches(artist, myArtists) {
   return myArtists.some((a) => artist.toLowerCase().includes(a.toLowerCase()));
@@ -29,7 +32,7 @@ export async function matchArtistCards(filteredCards, cardBoards, myArtists, car
 export function matchBasicLands(myArtists, cardPrintings = null) {
   const basicLandCards = {};
   for (const land of BASIC_LANDS) {
-    const landData = JSON.parse(fs.readFileSync(path.join(DATA_DIR, `${land}.json`), "utf-8"));
+    const landData = JSON.parse(fs.readFileSync(path.join(dataDir, `${land}.json`), "utf-8"));
     const cardName = land.charAt(0).toUpperCase() + land.slice(1);
     const specificPrinting = cardPrintings?.[cardName];
     for (const { artist, set, num, image, url } of landData) {
