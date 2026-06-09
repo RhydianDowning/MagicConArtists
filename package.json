@@ -5,6 +5,7 @@
   "main": "electron/main.js",
   "scripts": {
     "start": "electron electron/main.js",
+    "dev": "electronmon .",
     "build:mac": "electron-builder --mac",
     "build:win": "electron-builder --win",
     "build:all": "electron-builder --mac --win"
@@ -21,8 +22,14 @@
       "src/**/*"
     ],
     "extraResources": [
-      { "from": "data", "to": "data" },
-      { "from": "artistLists", "to": "artistLists" }
+      {
+        "from": "data",
+        "to": "data"
+      },
+      {
+        "from": "artistLists",
+        "to": "artistLists"
+      }
     ],
     "mac": {
       "target": "dmg",
@@ -38,6 +45,7 @@
   },
   "devDependencies": {
     "electron": "35.1.2",
-    "electron-builder": "^25.1.8"
+    "electron-builder": "^25.1.8",
+    "electronmon": "^2.0.4"
   }
 }
