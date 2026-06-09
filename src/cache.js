@@ -2,8 +2,11 @@ import fs from "fs";
 import path from "path";
 import { CACHE_DIR } from "./config.js";
 
+let cacheDir = CACHE_DIR;
+export function setCacheDir(dir) { cacheDir = dir; }
+
 function getCachePath(name) {
-  return path.join(CACHE_DIR, name.replace(/[/\\?%*:|"<>]/g, "_") + ".json");
+  return path.join(cacheDir, name.replace(/[/\\?%*:|"<>]/g, "_") + ".json");
 }
 
 export function readCache(name) {

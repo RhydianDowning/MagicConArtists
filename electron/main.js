@@ -2,14 +2,25 @@ import { app, BrowserWindow, ipcMain, session } from "electron";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
-import { DECKLISTS_DIR, ARTISTS_DIR, USER_ARTISTS_DIR, BASIC_LANDS } from "../src/config.js";
+import { ARTISTS_DIR, BASIC_LANDS } from "../src/config.js";
 import { getArtists, isCached } from "../src/scryfall.js";
 import { matchArtistCards, matchBasicLands } from "../src/matcher.js";
+import { setCacheDir } from "../src/cache.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// Use userData for writable directories in packaged builds, project root in dev
+const isPackaged = app.isPackaged;
+const userDataRoot = isPackaged ? app.getPath("userData") : path.join(__dirname, "..");
+const DECKLISTS_DIR = path.join(userDataRoot, "localStorage", "Decklists");
+const USER_ARTISTS_DIR = path.join(userDataRoot, "localStorage", "ArtistLists");
+const CACHE_DIR = path.join(userDataRoot, "localStorage", "CardArtists");
+
 function createWindow() {
+  fs.mkdirSync(DECKLISTS_DIR, { recursive: true });
   fs.mkdirSync(USER_ARTISTS_DIR, { recursive: true });
+  fs.mkdirSync(CACHE_DIR, { recursive: true });
+  setCacheDir(CACHE_DIR);
   const win = new BrowserWindow({
     width: 1100,
     height: 800,
