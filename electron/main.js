@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, shell, ipcMain } from "electron";
 import { ensureDirs, PRELOAD_PATH, INDEX_HTML, CACHE_DIR, DATA_DIR } from "./paths.js";
 import { setCacheDir } from "../src/cache.js";
 import { setDataDir } from "../src/matcher.js";
@@ -28,6 +28,10 @@ registerDecklists();
 registerArtists();
 registerMoxfield();
 registerMatch();
+
+ipcMain.handle("open-urls", (event, urls) => {
+  urls.forEach((url) => shell.openExternal(url));
+});
 
 app.whenReady().then(createWindow);
 app.on("window-all-closed", () => app.quit());
