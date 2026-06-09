@@ -13,6 +13,7 @@ contextBridge.exposeInMainWorld("api", {
   resetCache: () => ipcRenderer.invoke("reset-cache"),
   openUrls: (urls) => ipcRenderer.invoke("open-urls", urls),
   exportPdfImages: (imageUrls) => ipcRenderer.invoke("export-pdf-images", imageUrls),
+  exportPdfChecklist: (cards) => ipcRenderer.invoke("export-pdf-checklist", cards),
   openFile: (path) => ipcRenderer.invoke("open-file", path),
   onProgress: (cb) => ipcRenderer.on("match-progress", (_, data) => cb(data)),
 });

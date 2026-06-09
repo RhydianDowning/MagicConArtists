@@ -44,4 +44,46 @@ export function register() {
     await new Promise((resolve) => stream.on("finish", resolve));
     return filePath;
   });
+
+  ipcMain.handle("export-pdf-checklist", async (event, cards) => {
+    const { canceled, filePath } = await dialog.showSaveDialog({
+      defaultPath: "card-checklist.pdf",
+      filters: [{ name: "PDF", extensions: ["pdf"] }],
+    });
+    if (canceled || !filePath) return null;
+
+    // Group by artist
+    const byArtist = {};
+    cards.forEach((c) => {
+      if (!byArtist[c.artist]) byArtist[c.artist] = [];
+      byArtist[c.artist].push(c.name);
+    });
+    const sorted = Object.keys(byArtist).sort();
+
+    const doc = new PDFDocument({ size: "A4", margin: 40 });
+    const stream = fs.createWriteStream(filePath);
+    doc.pipe(stream);
+
+    doc.fontSize(18).text("Card Signing Checklist", { align: "center" });
+    doc.moveDown(1);
+
+    for (const artist of sorted) {
+      if (doc.y > doc.page.height - 80) doc.addPage();
+      doc.fontSize(12).fillColor("#1a8a6a").text(artist);
+      doc.moveDown(0.3);
+      for (const name of byArtist[artist]) {
+        if (doc.y > doc.page.height - 50) doc.addPage();
+        doc.fontSize(10).fillColor("#333333");
+        const y = doc.y;
+        doc.rect(40, y + 2, 10, 10).stroke();
+        doc.text(name, 58, y);
+        doc.moveDown(0.2);
+      }
+      doc.moveDown(0.5);
+    }
+
+    doc.end();
+    await new Promise((resolve) => stream.on("finish", resolve));
+    return filePath;
+  });
 }

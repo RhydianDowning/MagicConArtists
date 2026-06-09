@@ -58,9 +58,17 @@ function toggleExportMenu() {
   document.getElementById("export-menu").classList.toggle("hidden");
 }
 
-function exportPdfChecklist() {
+async function exportPdfChecklist() {
   document.getElementById("export-menu").classList.add("hidden");
-  // TODO: implement
+  const selected = [...document.querySelectorAll(".card.selected")];
+  if (!selected.length) return;
+  const cards = selected.map((el) => {
+    const artist = el.closest("details")?.querySelector("h2")?.firstChild?.textContent?.trim() || "Unknown";
+    const name = el.querySelector("p")?.firstChild?.textContent?.trim() || "";
+    return { artist, name };
+  }).filter((c) => c.name);
+  const filePath = await window.api.exportPdfChecklist(cards);
+  if (filePath && confirm("PDF saved. Open it now?")) window.api.openFile(filePath);
 }
 
 async function exportPdfImages() {
@@ -71,9 +79,22 @@ async function exportPdfImages() {
   if (filePath && confirm("PDF saved. Open it now?")) window.api.openFile(filePath);
 }
 
-function exportMoxfield() {
+async function exportMoxfield() {
   document.getElementById("export-menu").classList.add("hidden");
-  // TODO: implement
+  const selected = [...document.querySelectorAll(".card.selected")];
+  if (!selected.length) return;
+  const lines = selected.map((el) => {
+    const p = el.querySelector("p");
+    const name = p?.firstChild?.textContent?.trim() || "";
+    const small = p?.querySelector("small")?.textContent || "";
+    const match = small.match(/^(\S+)\s+#(.+)$/);
+    if (match) return `1 ${name} (${match[1]}) ${match[2]}`;
+    return `1 ${name}`;
+  }).filter(Boolean);
+
+  const text = lines.join("\n");
+  await navigator.clipboard.writeText(text);
+  alert(`Copied ${lines.length} cards to clipboard in Moxfield format.\n\nPaste into Moxfield's import.`);
 }
 
 window.toggleExportMenu = toggleExportMenu;
