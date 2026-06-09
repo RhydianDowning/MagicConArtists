@@ -156,7 +156,7 @@ ipcMain.handle("delete-deck", (event, filename) => {
 
 ipcMain.handle("save-deck", (event, { name, cards }) => {
   const filename = uniqueFilename(DECKLISTS_DIR, name.replace(/[/\\?%*:|"<>]/g, "_"));
-  const lines = cards.map((c) => c.set && c.num ? `${c.name}|${c.set}|${c.num}|mainboard` : c.name);
+  const lines = cards.map((c) => c.set && c.num ? `${c.name}|${c.set}|${c.num}|${c.board || "mainboard"}` : `${c.name}|||${c.board || "mainboard"}`);
   fs.writeFileSync(path.join(DECKLISTS_DIR, filename), lines.join("\n") + "\n");
   return { filename, count: cards.length };
 });

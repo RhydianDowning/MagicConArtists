@@ -174,10 +174,21 @@ function toggleNewDeckForm() {
 window.toggleNewDeckForm = toggleNewDeckForm;
 
 function parseDeckLine(line) {
+  // Strip foil marker before parsing
+  line = line.replace(/\s*\*[Ff]\*$/, "");
+  // Handle pipe-separated format: "Card Name|SET|NUM" or "Card Name|SET|NUM|board"
+  if (line.includes("|")) {
+    const [name, set, num] = line.split("|");
+    if (!name) return null;
+    let cleanName = name.trim().replace(/(?<!\/)\/(?!\/)/g, "//");
+    return { name: cleanName, set: (set || "").toUpperCase(), num: num || "" };
+  }
   // Handles: "1 Lightning Bolt (LEB) 162", "Lightning Bolt (LEB) 162", "Lightning Bolt", "4x Dark Ritual"
   const m = line.match(/^(?:\d+x?\s+)?(.+?)(?:\s+\(([A-Za-z0-9]{3,5})\)(?:\s+(\S+))?)?$/);
   if (!m) return null;
-  return { name: m[1].trim(), set: (m[2] || "").toUpperCase(), num: m[3] || "" };
+  let name = m[1].trim();
+  name = name.replace(/(?<!\/)\/(?!\/)/g, "//");
+  return { name, set: (m[2] || "").toUpperCase(), num: m[3] || "" };
 }
 
 async function saveDeck() {
@@ -187,11 +198,22 @@ async function saveDeck() {
   const text = document.getElementById("deck-bulk").value.trim();
   if (!text) { status.textContent = "Paste a decklist"; return; }
   const seen = new Set();
-  const cards = text.split("\n").map((l) => l.trim()).filter(Boolean).map(parseDeckLine).filter((c) => {
-    if (!c || seen.has(c.name)) return false;
+  let board = "mainboard";
+  const cards = [];
+  for (const raw of text.split("\n")) {
+    const line = raw.trim();
+    if (!line) continue;
+    const sectionMatch = line.match(/^(SIDEBOARD|CONSIDERING|MAYBEBOARD)\s*:?\s*$/i);
+    if (sectionMatch) {
+      board = sectionMatch[1].toLowerCase() === "maybeboard" ? "considering" : sectionMatch[1].toLowerCase();
+      continue;
+    }
+    const c = parseDeckLine(line);
+    if (!c || seen.has(c.name)) continue;
     seen.add(c.name);
-    return true;
-  });
+    c.board = board;
+    cards.push(c);
+  }
   if (!cards.length) { status.textContent = "No valid cards found"; return; }
   const { filename, count } = await window.api.saveDeck({ name, cards });
   status.textContent = `✓ Saved ${count} cards to ${filename}`;
