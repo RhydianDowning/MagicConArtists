@@ -4,6 +4,7 @@ contextBridge.exposeInMainWorld("api", {
   getDecklists: () => ipcRenderer.invoke("get-decklists"),
   getArtistLists: () => ipcRenderer.invoke("get-artist-lists"),
   runMatch: (opts) => ipcRenderer.invoke("run-match", opts),
+  cancelMatch: () => ipcRenderer.invoke("cancel-match"),
   importMoxfield: (url) => ipcRenderer.invoke("import-moxfield", url),
   deleteDeck: (filename) => ipcRenderer.invoke("delete-deck", filename),
   saveDeck: (data) => ipcRenderer.invoke("save-deck", data),

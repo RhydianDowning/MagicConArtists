@@ -6,8 +6,14 @@ import { BASIC_LANDS } from "../../src/config.js";
 import { getArtists, isCached } from "../../src/scryfall.js";
 import { matchArtistCards, matchBasicLands } from "../../src/matcher.js";
 
+let cancelled = false;
+
 export function register() {
+  ipcMain.handle("cancel-match", () => { cancelled = true; });
+
   ipcMain.handle("run-match", async (event, { deckFiles, artistFile, artistSource }) => {
+    cancelled = false;
+
     const rawCards = deckFiles.flatMap((f) =>
       fs.readFileSync(path.join(DECKLISTS_DIR, f), "utf-8").split("\n").map((l) => l.trim()).filter(Boolean)
     );
@@ -35,6 +41,7 @@ export function register() {
     event.sender.send("match-progress", { cached, total, fetching: uncachedCards.length });
 
     for (let i = 0; i < uncachedCards.length; i++) {
+      if (cancelled) return null;
       event.sender.send("match-progress", { cached, total, fetching: uncachedCards.length, current: i + 1, card: uncachedCards[i] });
       await getArtists(uncachedCards[i], {
         onRateLimit: () => event.sender.send("match-progress", { cached, total, fetching: uncachedCards.length, current: i + 1, card: uncachedCards[i], rateLimited: true }),
@@ -42,6 +49,8 @@ export function register() {
       });
       await new Promise((r) => setTimeout(r, 500));
     }
+
+    if (cancelled) return null;
 
     const hasAnyPrintingData = Object.keys(cardPrintings).length > 0;
     const specificArtistCards = hasAnyPrintingData ? await matchArtistCards(filteredCards, cardBoards, myArtists, cardPrintings) : null;
