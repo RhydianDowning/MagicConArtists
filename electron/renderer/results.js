@@ -65,8 +65,10 @@ function renderSections(artistCards, basicLandCards, artistBooths) {
     const hasLands = lands.length > 0;
     const classes = [onlyLands ? "lands-only" : "", hasLands ? "has-lands" : ""].filter(Boolean).join(" ");
     const booth = artistBooths[artist] ? `<span class="booth">${artistBooths[artist]}</span>` : "";
+    const count = cards.filter(c => c.board === "mainboard").length;
+    const countLabel = `<span class="card-count">${count} card${count !== 1 ? "s" : ""}</span>`;
     const isOpen = (artist in openState) ? openState[artist] : true;
-    html += `<details ${classes ? `class="${classes}"` : ""} ${isOpen ? "open" : ""}><summary><h2>${artist}${booth}</h2></summary><div class="grid">`;
+    html += `<details ${classes ? `class="${classes}"` : ""} ${isOpen ? "open" : ""}><summary><h2>${artist}${booth}${countLabel}</h2></summary><div class="grid">`;
     for (const c of cards) {
       const cls = c.board !== "mainboard" ? ` ${c.board}${c.board === "considering" ? " hidden" : ""}` : "";
       const boardLabel = (c.board === "sideboard" || c.board === "considering") ? `<span class="board-label">from ${c.board}</span>` : "";
