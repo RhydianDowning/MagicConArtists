@@ -62,3 +62,14 @@ npm start
 ```
 
 ## TODO
+
+- [x] Remove `*F*` from manual import so foils aren't excluded
+- [x] Log each card not found on Scryfall in a visible list
+- [x] Solution for updating/invalidating cache
+- [x] Ctrl-F / find function within the results page
+- [ ] Card count per artist in results header
+- [ ] Option to sort artists by card count (mainboard) instead of alphabetical
+- [ ] Show number of decks a card appears in
+- [ ] Export results (PDF/image for use at event)
+- [ ] Light/dark mode toggle
+- [ ] Cache Reset Notification? (New cards on scryfall)
