@@ -69,7 +69,7 @@ npm start
 - [x] Ctrl-F / find function within the results page
 - [x] Card count per artist in results header
 - [x] Option to sort artists by card count (mainboard) instead of alphabetical
-- [ ] Show number of decks a card appears in
+- [x] Show number of decks a card appears in
 - [ ] Export results (PDF/image for use at event)
 - [ ] Light/dark mode toggle
 - [ ] Cache Reset Notification? (New cards on scryfall)

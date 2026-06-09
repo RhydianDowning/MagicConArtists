@@ -15,9 +15,14 @@ export function register() {
   ipcMain.handle("run-match", async (event, { deckFiles, artistFile, artistSource }) => {
     cancelled = false;
 
-    const rawCards = deckFiles.flatMap((f) =>
-      fs.readFileSync(path.join(DECKLISTS_DIR, f), "utf-8").split("\n").map((l) => l.trim()).filter(Boolean)
-    );
+    // Count how many decks each card appears in
+    const cardDeckCounts = {};
+    const rawCards = deckFiles.flatMap((f) => {
+      const lines = fs.readFileSync(path.join(DECKLISTS_DIR, f), "utf-8").split("\n").map((l) => l.trim()).filter(Boolean);
+      const namesInDeck = new Set(lines.map((l) => l.split("|")[0]));
+      namesInDeck.forEach((name) => { cardDeckCounts[name] = (cardDeckCounts[name] || 0) + 1; });
+      return lines;
+    });
     const seen = new Set();
     const cards = rawCards.map((l) => {
       const parts = l.split("|");
@@ -68,6 +73,6 @@ export function register() {
     const matchedCards = new Set(Object.values(allArtistCards).flatMap((cards) => cards.map((c) => c.card)));
     const noMatch = filteredCards.filter((c) => !matchedCards.has(c) && !notFound.includes(c));
 
-    return { specificArtistCards, allArtistCards, specificBasicLandCards, allBasicLandCards, artistBooths, notFound, noMatch };
+    return { specificArtistCards, allArtistCards, specificBasicLandCards, allBasicLandCards, artistBooths, notFound, noMatch, cardDeckCountsJson: JSON.stringify(cardDeckCounts) };
   });
 }

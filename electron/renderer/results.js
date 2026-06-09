@@ -7,7 +7,8 @@ let sortByCount = false;
 
 function renderResults(data) {
   resultData = data;
-  const { allArtistCards, allBasicLandCards, specificArtistCards, specificBasicLandCards, artistBooths, notFound, noMatch } = data;
+  const { allArtistCards, allBasicLandCards, specificArtistCards, specificBasicLandCards, artistBooths, notFound, noMatch, cardDeckCountsJson } = data;
+  data.cardDeckCounts = JSON.parse(cardDeckCountsJson || "{}");
   const container = document.getElementById("results");
   container.style.display = "block";
 
@@ -72,7 +73,8 @@ function renderSections(artistCards, basicLandCards, artistBooths) {
     for (const c of cards) {
       const cls = c.board !== "mainboard" ? ` ${c.board}${c.board === "considering" ? " hidden" : ""}` : "";
       const boardLabel = (c.board === "sideboard" || c.board === "considering") ? `<span class="board-label">from ${c.board}</span>` : "";
-      html += `<div class="card${cls}"><a href="${c.url}" target="_blank"><img src="${c.image}" loading="lazy" alt="${c.card}"></a><p>${c.card}<br><small>${c.set} #${c.num}</small></p>${boardLabel}</div>`;
+      const deckCount = resultData.cardDeckCounts?.[c.card] > 1 ? `<span class="deck-count">in ${resultData.cardDeckCounts[c.card]} decks</span>` : "";
+      html += `<div class="card${cls}"><a href="${c.url}" target="_blank"><img src="${c.image}" loading="lazy" alt="${c.card}"></a><p>${c.card}<br><small>${c.set} #${c.num}</small></p>${boardLabel}${deckCount}</div>`;
     }
     for (const c of lands) {
       html += `<div class="card basicland"><a href="${c.url}" target="_blank"><img src="${c.image}" loading="lazy" alt="${c.card}"></a><p>${c.card}<br><small>${c.set} #${c.num}</small></p></div>`;
