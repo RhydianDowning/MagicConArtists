@@ -19,7 +19,8 @@
     "productName": "SignatureHunter",
     "files": [
       "electron/**/*",
-      "src/**/*"
+      "src/**/*",
+      "!node_modules/**/{test,tests,__tests__,docs,example,examples}/**"
     ],
     "extraResources": [
       {
@@ -49,6 +50,6 @@
     "electronmon": "^2.0.4"
   },
   "dependencies": {
-    "pdfkit": "^0.15.2"
+    "jspdf": "^2.5.2"
   }
 }

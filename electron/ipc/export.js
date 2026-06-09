@@ -1,5 +1,5 @@
 import { ipcMain, dialog } from "electron";
-import PDFDocument from "pdfkit";
+import { jsPDF } from "jspdf";
 import fs from "fs";
 
 export function register() {
@@ -10,38 +10,34 @@ export function register() {
     });
     if (canceled || !filePath) return null;
 
-    // Download all images
-    const images = [];
-    for (const url of imageUrls) {
-      try {
-        const res = await fetch(url);
-        if (res.ok) images.push(Buffer.from(await res.arrayBuffer()));
-      } catch {}
-    }
-
-    // Build PDF: 9 images per A4 page (3x3 grid)
-    const doc = new PDFDocument({ size: "A4", margin: 20 });
-    const stream = fs.createWriteStream(filePath);
-    doc.pipe(stream);
-
-    const pageW = doc.page.width - 40;
-    const pageH = doc.page.height - 40;
+    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const pageW = 210 - 20; // A4 width minus margins
+    const pageH = 297 - 20;
     const cols = 3;
     const rows = 3;
     const cardW = pageW / cols;
     const cardH = pageH / rows;
 
-    images.forEach((img, i) => {
-      if (i > 0 && i % 9 === 0) doc.addPage();
-      const col = i % 3;
-      const row = Math.floor((i % 9) / 3);
-      const x = 20 + col * cardW;
-      const y = 20 + row * cardH;
-      doc.image(img, x, y, { fit: [cardW - 5, cardH - 5], align: "center", valign: "center" });
-    });
+    let count = 0;
+    for (const url of imageUrls) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) continue;
+        const buf = Buffer.from(await res.arrayBuffer());
+        const base64 = buf.toString("base64");
+        const ext = url.includes(".png") ? "PNG" : "JPEG";
 
-    doc.end();
-    await new Promise((resolve) => stream.on("finish", resolve));
+        if (count > 0 && count % 9 === 0) doc.addPage();
+        const col = count % 3;
+        const row = Math.floor((count % 9) / 3);
+        const x = 10 + col * cardW;
+        const y = 10 + row * cardH;
+        doc.addImage(`data:image/${ext.toLowerCase()};base64,${base64}`, ext, x, y, cardW - 2, cardH - 2);
+        count++;
+      } catch {}
+    }
+
+    fs.writeFileSync(filePath, Buffer.from(doc.output("arraybuffer")));
     return filePath;
   });
 
@@ -60,30 +56,32 @@ export function register() {
     });
     const sorted = Object.keys(byArtist).sort();
 
-    const doc = new PDFDocument({ size: "A4", margin: 40 });
-    const stream = fs.createWriteStream(filePath);
-    doc.pipe(stream);
+    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    let y = 15;
 
-    doc.fontSize(18).text("Card Signing Checklist", { align: "center" });
-    doc.moveDown(1);
+    doc.setFontSize(18);
+    doc.text("Card Signing Checklist", 105, y, { align: "center" });
+    y += 12;
 
     for (const artist of sorted) {
-      if (doc.y > doc.page.height - 80) doc.addPage();
-      doc.fontSize(12).fillColor("#1a8a6a").text(artist);
-      doc.moveDown(0.3);
+      if (y > 275) { doc.addPage(); y = 15; }
+      doc.setFontSize(12);
+      doc.setTextColor(26, 138, 106);
+      doc.text(artist, 10, y);
+      y += 6;
+
+      doc.setFontSize(10);
+      doc.setTextColor(51, 51, 51);
       for (const name of byArtist[artist]) {
-        if (doc.y > doc.page.height - 50) doc.addPage();
-        doc.fontSize(10).fillColor("#333333");
-        const y = doc.y;
-        doc.rect(40, y + 2, 10, 10).stroke();
-        doc.text(name, 58, y);
-        doc.moveDown(0.2);
+        if (y > 280) { doc.addPage(); y = 15; }
+        doc.rect(10, y - 3, 3.5, 3.5);
+        doc.text(name, 16, y);
+        y += 5;
       }
-      doc.moveDown(0.5);
+      y += 3;
     }
 
-    doc.end();
-    await new Promise((resolve) => stream.on("finish", resolve));
+    fs.writeFileSync(filePath, Buffer.from(doc.output("arraybuffer")));
     return filePath;
   });
 }
