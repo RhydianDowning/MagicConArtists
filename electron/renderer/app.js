@@ -22,9 +22,10 @@ async function refreshDeckList() {
   const artists = await window.api.getArtistLists();
   renderDeckList(decks);
   const artistsEl = document.getElementById("artists");
-  artists.forEach((a) => {
+  artists.forEach((a, i) => {
     const del = a.source === "user" ? `<span class="delete-btn" onclick="deleteArtistList(event, '${a.file}')">✕</span>` : "";
-    artistsEl.innerHTML += `<label><input type="radio" name="artist" value="${a.file}" data-source="${a.source}"> ${a.file.replace(/\.txt$/, "")}${del}</label>`;
+    const checked = i === 0 ? "checked" : "";
+    artistsEl.innerHTML += `<label><input type="radio" name="artist" value="${a.file}" data-source="${a.source}" ${checked}> ${a.file.replace(/\.txt$/, "")}${del}</label>`;
   });
 })();
 
