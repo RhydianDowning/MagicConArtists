@@ -202,6 +202,7 @@ ipcMain.handle("run-match", async (event, { deckFiles, artistFile, artistSource 
       onRateLimit: () => event.sender.send("match-progress", { cached, total, fetching: uncachedCards.length, current: i + 1, card: uncachedCards[i], rateLimited: true }),
       onResume: () => event.sender.send("match-progress", { cached, total, fetching: uncachedCards.length, current: i + 1, card: uncachedCards[i] }),
     });
+    await new Promise((r) => setTimeout(r, 500));
   }
 
   const hasAnyPrintingData = Object.keys(cardPrintings).length > 0;

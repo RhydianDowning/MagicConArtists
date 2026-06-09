@@ -25,7 +25,7 @@ export async function getArtists(name, { onRateLimit, onResume } = {}) {
       if (onResume) onResume();
       continue;
     }
-    if (!res.ok) return [];
+    if (!res.ok) { writeCache(name, []); return []; }
     const data = await res.json();
     data.data.forEach((card) => {
       const image = card.image_uris?.normal || card.card_faces?.[0]?.image_uris?.normal || "";

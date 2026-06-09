@@ -51,10 +51,14 @@ async function runMatch() {
   document.getElementById("run-btn").disabled = true;
   document.getElementById("progress").textContent = "Starting...";
 
-  const result = await window.api.runMatch({ deckFiles, artistFile, artistSource });
-
-  document.getElementById("setup").style.display = "none";
-  renderResults(result);
+  try {
+    const result = await window.api.runMatch({ deckFiles, artistFile, artistSource });
+    document.getElementById("setup").style.display = "none";
+    renderResults(result);
+  } catch (err) {
+    document.getElementById("progress").innerHTML = `<span style="color:#f85149">Error: ${err.message}</span>`;
+    document.getElementById("run-btn").disabled = false;
+  }
 }
 
 let resultData = null;
