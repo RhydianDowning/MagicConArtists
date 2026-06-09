@@ -34,7 +34,7 @@ export function register() {
         const row = Math.floor((count % 9) / 3);
         const x = marginX + col * cardW;
         const y = marginY + row * cardH;
-        doc.addImage(`data:image/${ext.toLowerCase()};base64,${base64}`, ext, x, y, cardW, cardH);
+        doc.addImage(`data:image/${ext.toLowerCase()};base64,${base64}`, ext, x, y, cardW - 0.5, cardH - 0.5);
         count++;
       } catch {}
     }
