@@ -6,7 +6,7 @@ Find which artists from an event have illustrated cards in your MTG decklists â€
 
 ```bash
 # Clone the repo
-git clone https://github.com/YOUR_USERNAME/ScryfallArtists.git
+git clone https://github.com/RhydianDowning/MagicConArtists.git
 cd ScryfallArtists
 
 # Install dependencies
