@@ -31,6 +31,13 @@
     .no-match-section summary { cursor: pointer; color: #e6edf3; }
     .no-match-section ul { margin: 0.5rem 0 0; padding-left: 1.5rem; columns: 2; }
     .no-match-section li { padding: 0.15rem 0; }
+    .find-bar { position: fixed; top: 0; right: 0; background: #161b22; border: 1px solid #30363d; border-radius: 0 0 0 6px; padding: 0.4rem 0.6rem; display: flex; align-items: center; gap: 0.4rem; z-index: 999; }
+    .find-bar input { background: #0d1117; border: 1px solid #30363d; color: #e6edf3; padding: 0.3rem 0.5rem; border-radius: 4px; font-size: 0.85rem; width: 180px; }
+    .find-bar button { background: none; border: none; color: #8b949e; cursor: pointer; font-size: 0.85rem; padding: 0.2rem 0.4rem; margin: 0; width: auto; }
+    .find-bar button:hover { color: #e6edf3; }
+    .find-bar #find-count { color: #8b949e; font-size: 0.8rem; }
+    .find-highlight { background: rgba(255, 200, 0, 0.3); border-radius: 2px; }
+    .find-highlight-active { background: rgba(255, 200, 0, 0.7); }
     button { margin-top: 1.5rem; width: 100%; padding: 0.7rem; background: #238636; border: none; color: #fff; border-radius: 6px; font-size: 1rem; cursor: pointer; }
     button:hover { background: #2ea043; }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -149,6 +156,14 @@
   </div>
 
   <div id="results"></div>
+
+  <div id="find-bar" class="find-bar hidden">
+    <input type="text" id="find-input" placeholder="Find..." oninput="findInPage()">
+    <span id="find-count"></span>
+    <button onclick="findNext()">▼</button>
+    <button onclick="findPrev()">▲</button>
+    <button onclick="closeFindBar()">✕</button>
+  </div>
 
   <script src="deck-import.js"></script>
   <script src="artist-list.js"></script>
