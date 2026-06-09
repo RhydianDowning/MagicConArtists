@@ -62,6 +62,14 @@
     <button onclick="selectAllCards()">Select All</button>
     <button onclick="deselectAllCards()">Deselect All</button>
     <button class="scryfall-btn" onclick="openSelectedScryfall()">Open in Scryfall</button>
+    <span class="export-wrapper">
+      <button class="export-btn" onclick="toggleExportMenu()">Export ▾</button>
+      <div id="export-menu" class="export-menu hidden">
+        <button onclick="exportPdfChecklist()">PDF Checklist</button>
+        <button onclick="exportPdfImages()">PDF Images</button>
+        <button onclick="exportMoxfield()">Moxfield Decklist</button>
+      </div>
+    </span>
   </div>
 
   <div id="find-bar" class="find-bar hidden">

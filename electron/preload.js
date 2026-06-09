@@ -12,5 +12,7 @@ contextBridge.exposeInMainWorld("api", {
   deleteArtistList: (filename) => ipcRenderer.invoke("delete-artist-list", filename),
   resetCache: () => ipcRenderer.invoke("reset-cache"),
   openUrls: (urls) => ipcRenderer.invoke("open-urls", urls),
+  exportPdfImages: (imageUrls) => ipcRenderer.invoke("export-pdf-images", imageUrls),
+  openFile: (path) => ipcRenderer.invoke("open-file", path),
   onProgress: (cb) => ipcRenderer.on("match-progress", (_, data) => cb(data)),
 });

@@ -47,5 +47,8 @@
     "electron": "35.1.2",
     "electron-builder": "^25.1.8",
     "electronmon": "^2.0.4"
+  },
+  "dependencies": {
+    "pdfkit": "^0.15.2"
   }
 }

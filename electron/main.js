@@ -6,6 +6,7 @@ import { register as registerDecklists } from "./ipc/decklists.js";
 import { register as registerArtists } from "./ipc/artists.js";
 import { register as registerMoxfield } from "./ipc/moxfield.js";
 import { register as registerMatch } from "./ipc/match.js";
+import { register as registerExport } from "./ipc/export.js";
 
 function createWindow() {
   ensureDirs();
@@ -28,9 +29,14 @@ registerDecklists();
 registerArtists();
 registerMoxfield();
 registerMatch();
+registerExport();
 
 ipcMain.handle("open-urls", (event, urls) => {
   urls.forEach((url) => shell.openExternal(url));
+});
+
+ipcMain.handle("open-file", (event, filePath) => {
+  shell.openPath(filePath);
 });
 
 app.whenReady().then(createWindow);

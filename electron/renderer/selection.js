@@ -52,3 +52,31 @@ window.toggleCardSelect = toggleCardSelect;
 window.selectAllCards = selectAllCards;
 window.deselectAllCards = deselectAllCards;
 window.openSelectedScryfall = openSelectedScryfall;
+
+// Export menu
+function toggleExportMenu() {
+  document.getElementById("export-menu").classList.toggle("hidden");
+}
+
+function exportPdfChecklist() {
+  document.getElementById("export-menu").classList.add("hidden");
+  // TODO: implement
+}
+
+async function exportPdfImages() {
+  document.getElementById("export-menu").classList.add("hidden");
+  const images = [...document.querySelectorAll(".card.selected img")].map((img) => img.src).filter(Boolean);
+  if (!images.length) return;
+  const filePath = await window.api.exportPdfImages(images);
+  if (filePath && confirm("PDF saved. Open it now?")) window.api.openFile(filePath);
+}
+
+function exportMoxfield() {
+  document.getElementById("export-menu").classList.add("hidden");
+  // TODO: implement
+}
+
+window.toggleExportMenu = toggleExportMenu;
+window.exportPdfChecklist = exportPdfChecklist;
+window.exportPdfImages = exportPdfImages;
+window.exportMoxfield = exportMoxfield;
