@@ -84,7 +84,7 @@ function renderResults(data) {
   let html = `<button class="back-btn" onclick="location.reload()">← Back</button>`;
   html += `<div class="filters">`;
   html += `<button id="btn-sideboard" class="active" onclick="toggleFilter('sideboard')" ${hasSideboard ? "" : "disabled"}>Show Sideboard</button>`;
-  html += `<button id="btn-considering" class="active" onclick="toggleFilter('considering')" ${hasConsidering ? "" : "disabled"}>Show Considering</button>`;
+  html += `<button id="btn-considering" class="" onclick="toggleFilter('considering')" ${hasConsidering ? "" : "disabled"}>Show Considering</button>`;
   html += `<button id="btn-landmode" onclick="toggleLandMode()">Basic Land Mode</button>`;
   if (hasSpecific) html += `<button id="btn-specific" onclick="toggleSpecific()">Specific Printings</button>`;
   html += `</div>`;
@@ -108,7 +108,7 @@ function renderSections(artistCards, basicLandCards, artistBooths) {
     const booth = artistBooths[artist] ? `<span class="booth">${artistBooths[artist]}</span>` : "";
     html += `<details ${classes ? `class="${classes}"` : ""} open><summary><h2>${artist}${booth}</h2></summary><div class="grid">`;
     for (const c of cards) {
-      const cls = c.board !== "mainboard" ? ` ${c.board}` : "";
+      const cls = c.board !== "mainboard" ? ` ${c.board}${c.board === "considering" ? " hidden" : ""}` : "";
       const boardLabel = (c.board === "sideboard" || c.board === "considering") ? `<span class="board-label">from ${c.board}</span>` : "";
       html += `<div class="card${cls}"><a href="${c.url}" target="_blank"><img src="${c.image}" loading="lazy" alt="${c.card}"></a><p>${c.card}<br><small>${c.set} #${c.num}</small></p>${boardLabel}</div>`;
     }
@@ -120,7 +120,7 @@ function renderSections(artistCards, basicLandCards, artistBooths) {
   document.getElementById("card-sections").innerHTML = html;
 }
 
-const filters = { sideboard: true, considering: true };
+const filters = { sideboard: true, considering: false };
 
 function toggleFilter(type) {
   filters[type] = !filters[type];
