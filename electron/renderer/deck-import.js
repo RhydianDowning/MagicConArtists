@@ -7,10 +7,17 @@ function renderDeckList(decks) {
     decksEl.innerHTML = `<p class="empty-state">Import a deck from Moxfield below to get started.</p>`;
     return;
   }
+  const saved = JSON.parse(localStorage.getItem("checkedDecks") || "[]");
   decks.forEach((f) => {
     const escaped = f.replace(/'/g, "\\'");
-    decksEl.innerHTML += `<label><input type="checkbox" name="deck" value="${f}"> ${f.replace(/\.txt$/, "")}<span class="delete-btn" onclick="deleteDeck(event, '${escaped}')">✕</span></label>`;
+    const checked = saved.includes(f) ? "checked" : "";
+    decksEl.innerHTML += `<label><input type="checkbox" name="deck" value="${f}" ${checked} onchange="saveCheckedDecks()"> ${f.replace(/\.txt$/, "")}<span class="delete-btn" onclick="deleteDeck(event, '${escaped}')">✕</span></label>`;
   });
+}
+
+function saveCheckedDecks() {
+  const checked = [...document.querySelectorAll('input[name="deck"]:checked')].map(el => el.value);
+  localStorage.setItem("checkedDecks", JSON.stringify(checked));
 }
 
 async function refreshDeckList() {
@@ -101,6 +108,7 @@ async function deleteDeck(event, filename) {
 // Expose globally
 window.renderDeckList = renderDeckList;
 window.refreshDeckList = refreshDeckList;
+window.saveCheckedDecks = saveCheckedDecks;
 window.importMoxfield = importMoxfield;
 window.toggleNewDeckForm = toggleNewDeckForm;
 window.saveDeck = saveDeck;

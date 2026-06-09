@@ -62,5 +62,3 @@ npm start
 ```
 
 ## TODO
-
-- [ ] Ctrl-F / find function within the results page
