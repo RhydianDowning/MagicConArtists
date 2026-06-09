@@ -5,6 +5,7 @@ import { DECKLISTS_DIR, ARTISTS_DIR, USER_ARTISTS_DIR } from "../paths.js";
 import { BASIC_LANDS } from "../../src/config.js";
 import { getArtists, isCached } from "../../src/scryfall.js";
 import { matchArtistCards, matchBasicLands } from "../../src/matcher.js";
+import { readCache } from "../../src/cache.js";
 
 let cancelled = false;
 
@@ -52,12 +53,21 @@ export function register() {
 
     if (cancelled) return null;
 
+    // Identify cards not found on Scryfall
+    const notFound = filteredCards.filter((c) => {
+      const data = readCache(c);
+      return data && data.length === 0;
+    });
+
     const hasAnyPrintingData = Object.keys(cardPrintings).length > 0;
     const specificArtistCards = hasAnyPrintingData ? await matchArtistCards(filteredCards, cardBoards, myArtists, cardPrintings) : null;
     const allArtistCards = await matchArtistCards(filteredCards, cardBoards, myArtists, null);
     const specificBasicLandCards = hasAnyPrintingData ? matchBasicLands(myArtists, cardPrintings) : null;
     const allBasicLandCards = matchBasicLands(myArtists, null);
 
-    return { specificArtistCards, allArtistCards, specificBasicLandCards, allBasicLandCards, artistBooths };
+    const matchedCards = new Set(Object.values(allArtistCards).flatMap((cards) => cards.map((c) => c.card)));
+    const noMatch = filteredCards.filter((c) => !matchedCards.has(c) && !notFound.includes(c));
+
+    return { specificArtistCards, allArtistCards, specificBasicLandCards, allBasicLandCards, artistBooths, notFound, noMatch };
   });
 }

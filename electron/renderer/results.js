@@ -6,15 +6,20 @@ let specific = false;
 
 function renderResults(data) {
   resultData = data;
-  const { allArtistCards, allBasicLandCards, specificArtistCards, specificBasicLandCards, artistBooths } = data;
+  const { allArtistCards, allBasicLandCards, specificArtistCards, specificBasicLandCards, artistBooths, notFound, noMatch } = data;
   const container = document.getElementById("results");
   container.style.display = "block";
+
+  let html = "";
+  if (notFound && notFound.length) {
+    html += `<div class="not-found-box"><strong>Cards not found on Scryfall:</strong> ${notFound.join(", ")}</div>`;
+  }
 
   const hasSideboard = Object.values(allArtistCards).some(cards => cards.some(c => c.board === "sideboard"));
   const hasConsidering = Object.values(allArtistCards).some(cards => cards.some(c => c.board === "considering"));
   const hasSpecific = specificArtistCards !== null;
 
-  let html = `<button class="back-btn" onclick="location.reload()">← Back</button>`;
+  html += `<button class="back-btn" onclick="location.reload()">← Back</button>`;
   html += `<div class="filters">`;
   html += `<button id="btn-sideboard" class="active" onclick="toggleFilter('sideboard')" ${hasSideboard ? "" : "disabled"}>Show Sideboard</button>`;
   html += `<button id="btn-considering" class="" onclick="toggleFilter('considering')" ${hasConsidering ? "" : "disabled"}>Show Considering</button>`;
@@ -22,6 +27,9 @@ function renderResults(data) {
   if (hasSpecific) html += `<button id="btn-specific" onclick="toggleSpecific()">Specific Printings</button>`;
   html += `</div>`;
   html += `<div id="card-sections"></div>`;
+  if (noMatch && noMatch.length) {
+    html += `<details class="no-match-section"><summary>Cards with no artist match (${noMatch.length})</summary><ul>${noMatch.map((c) => `<li>${c}</li>`).join("")}</ul></details>`;
+  }
   container.innerHTML = html;
 
   renderSections(allArtistCards, allBasicLandCards, artistBooths);

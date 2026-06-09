@@ -63,7 +63,4 @@ npm start
 
 ## TODO
 
-- [ ] Remove `*F*` from manual import so foils aren't excluded
-- [ ] Log each card not found on Scryfall in a visible list
-- [ ] Solution for updating/invalidating cache
 - [ ] Ctrl-F / find function within the results page
