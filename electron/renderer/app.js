@@ -46,7 +46,15 @@ async function runMatch() {
   const artistRadio = document.querySelector('input[name="artist"]:checked');
   const artistFile = artistRadio ? artistRadio.value : null;
   const artistSource = artistRadio ? artistRadio.dataset.source : null;
-  if (!deckFiles.length || !artistFile) return;
+  if (!deckFiles.length || !artistFile) {
+    const msg = !deckFiles.length ? "Please select at least one decklist." : "Please select an artist list.";
+    document.getElementById("progress").innerHTML = `<span class="fetch-hint">${msg}</span>`;
+    const target = !deckFiles.length ? "decks" : "artists";
+    const el = document.getElementById(target);
+    el.classList.add("highlight");
+    setTimeout(() => el.classList.remove("highlight"), 2000);
+    return;
+  }
 
   document.getElementById("run-btn").disabled = true;
   document.getElementById("progress").textContent = "Starting...";
