@@ -1,5 +1,21 @@
 // Card selection: toggle, select/deselect all, open in Scryfall
 
+function showExportLoading(show) {
+  let overlay = document.getElementById("export-overlay");
+  if (show) {
+    if (!overlay) {
+      overlay = document.createElement("div");
+      overlay.id = "export-overlay";
+      overlay.className = "export-overlay";
+      overlay.innerHTML = `<span class="export-text"></span>`;
+      document.body.appendChild(overlay);
+    }
+    overlay.classList.remove("hidden");
+  } else if (overlay) {
+    overlay.classList.add("hidden");
+  }
+}
+
 function toggleCardSelect(el) {
   el.classList.toggle("selected");
   updateActionBar();
@@ -67,7 +83,9 @@ async function exportPdfChecklist() {
     const name = el.querySelector("p")?.firstChild?.textContent?.trim() || "";
     return { artist, name };
   }).filter((c) => c.name);
+  showExportLoading(true);
   const filePath = await window.api.exportPdfChecklist(cards);
+  showExportLoading(false);
   if (filePath && confirm("PDF saved. Open it now?")) window.api.openFile(filePath);
 }
 
@@ -75,7 +93,9 @@ async function exportPdfImages() {
   document.getElementById("export-menu").classList.add("hidden");
   const images = [...document.querySelectorAll(".card.selected img")].map((img) => img.src).filter(Boolean);
   if (!images.length) return;
+  showExportLoading(true);
   const filePath = await window.api.exportPdfImages(images);
+  showExportLoading(false);
   if (filePath && confirm("PDF saved. Open it now?")) window.api.openFile(filePath);
 }
 

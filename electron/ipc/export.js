@@ -1,22 +1,24 @@
-import { ipcMain, dialog } from "electron";
+import { ipcMain, dialog, BrowserWindow } from "electron";
 import { jsPDF } from "jspdf";
 import fs from "fs";
 
 export function register() {
   ipcMain.handle("export-pdf-images", async (event, imageUrls) => {
-    const { canceled, filePath } = await dialog.showSaveDialog({
+    const win = BrowserWindow.fromWebContents(event.sender);
+    const { canceled, filePath } = await dialog.showSaveDialog(win, {
       defaultPath: "card-images.pdf",
       filters: [{ name: "PDF", extensions: ["pdf"] }],
     });
     if (canceled || !filePath) return null;
 
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-    const pageW = 210 - 20; // A4 width minus margins
-    const pageH = 297 - 20;
+    // MTG card size: 63mm x 88mm, 3x3 grid centered on A4
+    const cardW = 63;
+    const cardH = 88;
     const cols = 3;
     const rows = 3;
-    const cardW = pageW / cols;
-    const cardH = pageH / rows;
+    const marginX = (210 - cols * cardW) / 2;
+    const marginY = (297 - rows * cardH) / 2;
 
     let count = 0;
     for (const url of imageUrls) {
@@ -30,9 +32,9 @@ export function register() {
         if (count > 0 && count % 9 === 0) doc.addPage();
         const col = count % 3;
         const row = Math.floor((count % 9) / 3);
-        const x = 10 + col * cardW;
-        const y = 10 + row * cardH;
-        doc.addImage(`data:image/${ext.toLowerCase()};base64,${base64}`, ext, x, y, cardW - 2, cardH - 2);
+        const x = marginX + col * cardW;
+        const y = marginY + row * cardH;
+        doc.addImage(`data:image/${ext.toLowerCase()};base64,${base64}`, ext, x, y, cardW, cardH);
         count++;
       } catch {}
     }
@@ -42,7 +44,8 @@ export function register() {
   });
 
   ipcMain.handle("export-pdf-checklist", async (event, cards) => {
-    const { canceled, filePath } = await dialog.showSaveDialog({
+    const win = BrowserWindow.fromWebContents(event.sender);
+    const { canceled, filePath } = await dialog.showSaveDialog(win, {
       defaultPath: "card-checklist.pdf",
       filters: [{ name: "PDF", extensions: ["pdf"] }],
     });

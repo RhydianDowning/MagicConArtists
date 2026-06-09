@@ -52,6 +52,12 @@ label { display: block; font-size: 0.85rem; color: #8b949e; margin-bottom: 0.3re
 .export-menu { position: absolute; bottom: 3rem; right: 0; background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 0.3rem; min-width: 160px; }
 .export-menu button { display: block; width: 100%; text-align: left; background: none; border: none; color: #e6edf3; padding: 0.5rem 0.75rem; font-size: 0.85rem; border-radius: 4px; cursor: pointer; margin: 0; }
 .export-menu button:hover { background: #1c2330; }
+.export-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.export-overlay span { background: #161b22; border: 1px solid #30363d; padding: 1rem 2rem; border-radius: 10px; color: #e6edf3; font-size: 1rem; }
+.export-text { display: inline-block; text-align: left; }
+.export-text::after { content: 'Generating PDF...'; visibility: hidden; height: 0; display: block; }
+.export-text::before { content: 'Generating PDF.'; animation: dots 0.8s steps(3, end) infinite; }
+@keyframes dots { 0% { content: 'Generating PDF.'; } 33% { content: 'Generating PDF..'; } 66% { content: 'Generating PDF...'; } }
 
 /* Buttons */
 button { margin-top: 1.5rem; width: 100%; padding: 0.7rem; background: #238636; border: none; color: #fff; border-radius: 6px; font-size: 1rem; cursor: pointer; }
