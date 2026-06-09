@@ -1,8 +1,11 @@
 Chris Rallis|H5-500
 Gabor|
+Gabor Szikszai|
+Zoltan & Gabor|
 Karl Kopinski|
 Magali Villeneuve|
 Zoltan|
+Zoltan Boros|
 Aaron Miller|H5-810
 Adam Paquette|
 Alayna Danner|
@@ -15,6 +18,7 @@ Eric Deschamps|H5-512
 Evyn Fong|
 Filip Burburan|
 Gaboleps|
+Gabriel Romero|
 Greg Staples|H5-620
 Igor Kieryluk|
 Irina Nordsol|H5-420
@@ -30,6 +34,7 @@ Kai Carpenter|
 Kieran Yanner|
 Leon Tukker|
 Liiga Smilshkalne|
+Liiga Klavina|
 Lucas Graciano|H5-630
 Manuel Castañón|
 Mark Tedin|H5-540
