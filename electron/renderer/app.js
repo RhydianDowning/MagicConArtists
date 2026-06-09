@@ -1,12 +1,23 @@
+// Helper to render decklist checkboxes
+function renderDeckList(decks) {
+  const decksEl = document.getElementById("decks");
+  decksEl.innerHTML = "";
+  decks.forEach((f) => {
+    const escaped = f.replace(/'/g, "\\'");
+    decksEl.innerHTML += `<label><input type="checkbox" name="deck" value="${f}"> ${f.replace(/\.txt$/, "")}<span class="delete-btn" onclick="deleteDeck(event, '${escaped}')">✕</span></label>`;
+  });
+}
+
+async function refreshDeckList() {
+  renderDeckList(await window.api.getDecklists());
+}
+
 // Populate checkbox/radio groups on load
 (async () => {
   const decks = await window.api.getDecklists();
   const artists = await window.api.getArtistLists();
-  const decksEl = document.getElementById("decks");
+  renderDeckList(decks);
   const artistsEl = document.getElementById("artists");
-  decks.forEach((f) => {
-    decksEl.innerHTML += `<label><input type="checkbox" name="deck" value="${f}"> ${f.replace(/\.txt$/, "")}<span class="delete-btn" onclick="deleteDeck(event, '${f}')">✕</span></label>`;
-  });
   artists.forEach((a) => {
     const del = a.source === "user" ? `<span class="delete-btn" onclick="deleteArtistList(event, '${a.file}')">✕</span>` : "";
     artistsEl.innerHTML += `<label><input type="radio" name="artist" value="${a.file}" data-source="${a.source}"> ${a.file.replace(/\.txt$/, "")}${del}</label>`;
@@ -131,13 +142,7 @@ async function importMoxfield() {
     const { filename, count } = await window.api.importMoxfield(url);
     status.textContent = `✓ Saved ${count} cards to ${filename}`;
     urlInput.value = "";
-    // Refresh decklist checkboxes
-    const decks = await window.api.getDecklists();
-    const decksEl = document.getElementById("decks");
-    decksEl.innerHTML = "";
-    decks.forEach((f) => {
-      decksEl.innerHTML += `<label><input type="checkbox" name="deck" value="${f}"> ${f.replace(/\.txt$/, "")}<span class="delete-btn" onclick="deleteDeck(event, '${f}')">✕</span></label>`;
-    });
+    await refreshDeckList();
   } catch (e) {
     status.style.color = "#f85149";
     status.textContent = `✗ ${e.message}`;
@@ -175,13 +180,7 @@ async function saveDeck() {
   status.textContent = `✓ Saved ${count} cards to ${filename}`;
   document.getElementById("deck-bulk").value = "";
   document.getElementById("deck-name").value = "";
-  // Refresh decklist
-  const decks = await window.api.getDecklists();
-  const decksEl = document.getElementById("decks");
-  decksEl.innerHTML = "";
-  decks.forEach((f) => {
-    decksEl.innerHTML += `<label><input type="checkbox" name="deck" value="${f}"> ${f.replace(/\.txt$/, "")}<span class="delete-btn" onclick="deleteDeck(event, '${f}')">✕</span></label>`;
-  });
+  await refreshDeckList();
   document.getElementById("new-deck-form").classList.add("hidden");
 }
 window.saveDeck = saveDeck;
@@ -191,12 +190,7 @@ async function deleteDeck(event, filename) {
   event.stopPropagation();
   if (!confirm(`Delete "${filename.replace(/\.txt$/, "")}"?`)) return;
   await window.api.deleteDeck(filename);
-  const decks = await window.api.getDecklists();
-  const decksEl = document.getElementById("decks");
-  decksEl.innerHTML = "";
-  decks.forEach((f) => {
-    decksEl.innerHTML += `<label><input type="checkbox" name="deck" value="${f}"> ${f.replace(/\.txt$/, "")}<span class="delete-btn" onclick="deleteDeck(event, '${f}')">✕</span></label>`;
-  });
+  await refreshDeckList();
 }
 window.deleteDeck = deleteDeck;
 

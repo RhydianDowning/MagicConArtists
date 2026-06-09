@@ -25,6 +25,17 @@ function createWindow() {
 app.whenReady().then(createWindow);
 app.on("window-all-closed", () => app.quit());
 
+// Helper: ensure filename is unique in a directory
+function uniqueFilename(dir, basename) {
+  let filename = basename + ".txt";
+  let i = 1;
+  while (fs.existsSync(path.join(dir, filename))) {
+    filename = `${basename} (${i}).txt`;
+    i++;
+  }
+  return filename;
+}
+
 // IPC handlers
 
 ipcMain.handle("get-decklists", () =>
@@ -105,7 +116,7 @@ ipcMain.handle("import-moxfield", async (event, url) => {
   }
 
   const name = deckData.name || publicId;
-  const filename = name.replace(/[/\\?%*:|"<>]/g, "_") + ".txt";
+  const filename = uniqueFilename(DECKLISTS_DIR, name.replace(/[/\\?%*:|"<>]/g, "_"));
   const seen = new Set();
   const lines = cards.filter((c) => { if (seen.has(c.name)) return false; seen.add(c.name); return true; })
     .map((c) => `${c.name}|${c.set || ""}|${c.num || ""}|${c.board || "mainboard"}`);
@@ -130,7 +141,7 @@ ipcMain.handle("delete-deck", (event, filename) => {
 });
 
 ipcMain.handle("save-deck", (event, { name, cards }) => {
-  const filename = name.replace(/[/\\?%*:|"<>]/g, "_") + ".txt";
+  const filename = uniqueFilename(DECKLISTS_DIR, name.replace(/[/\\?%*:|"<>]/g, "_"));
   const lines = cards.map((c) => c.set && c.num ? `${c.name}|${c.set}|${c.num}|mainboard` : c.name);
   fs.writeFileSync(path.join(DECKLISTS_DIR, filename), lines.join("\n") + "\n");
   return { filename, count: cards.length };
