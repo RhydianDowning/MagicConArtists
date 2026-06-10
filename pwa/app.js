@@ -3,7 +3,17 @@ let checklist = null;
 
 function init() {
   const hash = window.location.hash.slice(1);
-  if (hash.startsWith("data=")) {
+  if (hash.startsWith("z=")) {
+    try {
+      const base64 = decodeURIComponent(hash.slice(2));
+      const binary = Uint8Array.from(atob(base64.replace(/-/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0));
+      const json = pako.inflate(binary, { to: "string" });
+      const minimal = JSON.parse(json);
+      checklist = { name: minimal.n, cards: minimal.c.map((c) => ({ artist: c.a, booth: c.b, name: c.n, signed: c.s, set: "", num: "" })) };
+      localStorage.setItem("checklist", JSON.stringify(checklist));
+      window.location.hash = "";
+    } catch (e) { console.error("Failed to decode", e); }
+  } else if (hash.startsWith("data=")) {
     try {
       checklist = JSON.parse(atob(decodeURIComponent(hash.slice(5))));
       localStorage.setItem("checklist", JSON.stringify(checklist));

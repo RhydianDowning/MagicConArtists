@@ -2,6 +2,7 @@ import { ipcMain } from "electron";
 import fs from "fs";
 import path from "path";
 import QRCode from "qrcode";
+import pako from "pako";
 import { CONVENTIONS_DIR } from "../paths.js";
 
 function conPath(id) {
@@ -83,10 +84,12 @@ export function register() {
   ipcMain.handle("generate-checklist-qr", async (event, { id, baseUrl }) => {
     const data = readCon(id);
     if (!data) return null;
-    const json = JSON.stringify(data);
-    const encoded = Buffer.from(json).toString("base64");
-    const url = `${baseUrl}#data=${encodeURIComponent(encoded)}`;
-    const qrDataUrl = await QRCode.toDataURL(url, { width: 300, margin: 2, color: { dark: "#e6edf3", light: "#0d1117" } });
+    // Minimize payload: only essential fields
+    const minimal = { n: data.name, c: data.cards.map((c) => ({ a: c.artist, b: c.booth || "", n: c.name, s: c.signed })) };
+    const json = JSON.stringify(minimal);
+    const compressed = Buffer.from(pako.deflate(json)).toString("base64url");
+    const url = `${baseUrl}#z=${compressed}`;
+    const qrDataUrl = await QRCode.toDataURL(url, { width: 300, margin: 2, errorCorrectionLevel: "L", color: { dark: "#e6edf3", light: "#0d1117" } });
     return qrDataUrl;
   });
 }
