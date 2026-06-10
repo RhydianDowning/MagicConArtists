@@ -82,14 +82,21 @@ export function register() {
   });
 
   ipcMain.handle("generate-checklist-qr", async (event, { id, baseUrl }) => {
+    const qrDataUrl = await QRCode.toDataURL(baseUrl, { width: 300, margin: 2, errorCorrectionLevel: "L", color: { dark: "#e6edf3", light: "#0d1117" } });
+    return qrDataUrl;
+  });
+
+  ipcMain.handle("export-checklist-file", async (event, id) => {
+    const { dialog } = await import("electron");
     const data = readCon(id);
     if (!data) return null;
-    // Minimize payload: only essential fields
-    const minimal = { n: data.name, c: data.cards.map((c) => ({ a: c.artist, b: c.booth || "", n: c.name, s: c.signed })) };
-    const json = JSON.stringify(minimal);
-    const compressed = Buffer.from(pako.deflate(json)).toString("base64url");
-    const url = `${baseUrl}#z=${compressed}`;
-    const qrDataUrl = await QRCode.toDataURL(url, { width: 300, margin: 2, errorCorrectionLevel: "L", color: { dark: "#e6edf3", light: "#0d1117" } });
-    return qrDataUrl;
+    const win = (await import("electron")).BrowserWindow.fromWebContents(event.sender);
+    const { canceled, filePath } = await dialog.showSaveDialog(win, {
+      defaultPath: `${data.name.replace(/[/\\?%*:|"<>]/g, "_")}.json`,
+      filters: [{ name: "Checklist", extensions: ["json"] }],
+    });
+    if (canceled || !filePath) return null;
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+    return filePath;
   });
 }
