@@ -121,6 +121,8 @@ async function removeArtist(artist) {
 function hideChecklistView() {
   document.getElementById("checklist-view").classList.add("hidden");
   document.getElementById("setup").style.display = "";
+  document.getElementById("progress").textContent = "";
+  document.getElementById("run-btn").disabled = false;
   currentConventionId = null;
   showConventionList();
 }
