@@ -40,7 +40,7 @@ function render() {
   const isIOS = /iphone|ipad/i.test(navigator.userAgent);
   const isAndroid = /android/i.test(navigator.userAgent);
 
-  let html = `<h1>Painter's Servant</h1><p class="subtitle">Event Checklist</p>`;
+  let html = `<h1>CON-SIGN</h1><p class="subtitle">to memory</p>`;
 
   // Show instructions if no checklists loaded
   if (!checklists.length) {
@@ -51,13 +51,14 @@ function render() {
       <h3>Getting Started</h3>
       <ol>
         ${installTip}
-        <li><strong>Export a checklist</strong> from the desktop app using "Share to Phone" → "Export Checklist File"</li>
+        <li><strong>Export a checklist</strong> from Painter's Servant using "Share to Phone" → "Export to ConSign"</li>
         <li><strong>Send the file</strong> to this device (AirDrop, email, WhatsApp, etc.)</li>
         <li><strong>Tap "Load Checklist"</strong> below and select the file</li>
       </ol>
       <p class="note">Once loaded, this app works offline from your home screen — no internet needed at the event.</p>
     </div>`;
     html += `<label class="file-btn">Load Checklist<input type="file" accept=".json" onchange="loadFile(event)" hidden></label>`;
+    html += `<p class="app-credit">Application by Painter's Servant</p>`;
     app.innerHTML = html;
     return;
   }

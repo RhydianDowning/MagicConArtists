@@ -45,3 +45,4 @@ h1 { text-align: center; font-size: 1.6rem; font-weight: 300; letter-spacing: 0.
 .delete-btn:active { background: #da3633; border-color: #da3633; color: #fff; }
 
 .hidden { display: none !important; }
+.app-credit { text-align: center; color: #8b949e; font-size: 0.7rem; margin-top: 2rem; opacity: 0.6; }

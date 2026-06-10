@@ -201,11 +201,11 @@ async function shareChecklist() {
   if (!qrDataUrl) return;
   const modal = document.getElementById("convention-picker");
   modal.querySelector(".modal-content").innerHTML = `
-    <h3>Share to Phone</h3>
+    <h3>ConSign to Memory</h3>
     <p style="color:#8b949e;font-size:0.8rem;margin-bottom:0.75rem;">1. Scan the QR code to install the app on your phone</p>
     <img src="${qrDataUrl}" style="display:block;margin:0 auto 1rem;width:180px;height:180px;border-radius:8px;">
     <p style="color:#8b949e;font-size:0.8rem;margin-bottom:0.75rem;">2. Export your checklist and send it to your phone (AirDrop, email, etc.)</p>
-    <button class="share-export-btn" onclick="exportChecklistFile()">Export Checklist File</button>
+    <button class="share-export-btn" onclick="exportChecklistFile()">Export to ConSign</button>
     <p style="color:#8b949e;font-size:0.7rem;margin-bottom:1rem;">3. Open the file in the app on your phone to load it</p>
     <button class="modal-close" onclick="document.getElementById('convention-picker').classList.add('hidden')">Close</button>
   `;
@@ -214,9 +214,9 @@ async function shareChecklist() {
 
 async function exportChecklistFile() {
   const btn = document.querySelector(".share-export-btn");
-  btn.textContent = "Exporting...";
+  btn.textContent = "Consigning to memory...";
   await window.api.exportChecklistFile(currentConventionId);
-  btn.textContent = "Export Checklist File";
+  btn.textContent = "Export to ConSign";
 }
 window.shareChecklist = shareChecklist;
 window.exportChecklistFile = exportChecklistFile;

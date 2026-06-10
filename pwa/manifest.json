@@ -1,6 +1,6 @@
 {
-  "name": "Painter's Servant",
-  "short_name": "Servant",
+  "name": "ConSign to Memory",
+  "short_name": "ConSign",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#0d1117",
