@@ -11,25 +11,7 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div id="app">
-    <h1>Painter's Servant</h1>
-    <p class="subtitle">Event Checklist</p>
-
-    <div id="install-prompt" class="install-prompt hidden">
-      <p class="install-text"></p>
-      <button onclick="dismissInstall()">Got it</button>
-    </div>
-
-    <div id="load-section">
-      <label class="file-btn">
-        Load Checklist File
-        <input type="file" accept=".json" onchange="loadFile(event)" hidden>
-      </label>
-    </div>
-
-    <div id="checklist"></div>
-    <p id="empty" class="empty">Load a checklist file exported from the desktop app.</p>
-  </div>
+  <div id="app"></div>
   <script src="app.js"></script>
 </body>
 </html>
