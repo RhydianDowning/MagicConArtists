@@ -3,8 +3,8 @@
 
 OLD_APP="/Applications/SignatureHunter.app"
 NEW_APP="/Applications/Painters Servant.app"
-OLD_DATA="$HOME/Library/Application Support/SignatureHunter/localStorage"
-NEW_DATA="$HOME/Library/Application Support/Painters Servant/localStorage"
+OLD_DATA="$HOME/Library/Application Support/signature-hunter/localStorage"
+NEW_DATA="$HOME/Library/Application Support/painters-servant/localStorage"
 
 echo "=== Painter's Servant Migration ==="
 
