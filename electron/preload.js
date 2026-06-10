@@ -22,4 +22,6 @@ contextBridge.exposeInMainWorld("api", {
   addToConvention: (data) => ipcRenderer.invoke("add-to-convention", data),
   toggleSigned: (data) => ipcRenderer.invoke("toggle-signed", data),
   deleteConvention: (id) => ipcRenderer.invoke("delete-convention", id),
+  removeFromConvention: (data) => ipcRenderer.invoke("remove-from-convention", data),
+  removeArtistFromConvention: (data) => ipcRenderer.invoke("remove-artist-from-convention", data),
 });

@@ -4,11 +4,21 @@ let currentConventionId = null;
 
 async function showConventionPicker() {
   const conventions = await window.api.getConventions();
-  const list = document.getElementById("convention-list");
-  list.innerHTML = conventions.length
+  const modal = document.getElementById("convention-picker");
+  const content = modal.querySelector(".modal-content");
+  const listHtml = conventions.length
     ? conventions.map((c) => `<button onclick="addToExistingConvention('${c.id}')">${c.name}</button>`).join("")
     : `<p class="empty-state">No conventions yet. Create one below.</p>`;
-  document.getElementById("convention-picker").classList.remove("hidden");
+  content.innerHTML = `
+    <h3>Add to Convention Checklist</h3>
+    <div id="convention-list">${listHtml}</div>
+    <div class="modal-new">
+      <input type="text" id="new-convention-name" placeholder="New convention name...">
+      <button onclick="createAndAddConvention()">Create</button>
+    </div>
+    <button class="modal-close" onclick="hideConventionPicker()">Cancel</button>
+  `;
+  modal.classList.remove("hidden");
 }
 
 function hideConventionPicker() {
@@ -34,8 +44,10 @@ async function addToExistingConvention(id) {
   if (!cards.length) return;
   await window.api.addToConvention({ id, cards });
   hideConventionPicker();
-  deselectAllCards();
-  alert(`Added ${cards.length} card(s) to checklist.`);
+  if (confirm(`Added ${cards.length} card(s) to checklist. View it now?`)) {
+    deselectAllCards();
+    showChecklistView(id);
+  }
 }
 
 async function createAndAddConvention() {
@@ -76,11 +88,13 @@ function renderChecklist(data) {
   for (const artist of sorted) {
     const { booth, cards } = byArtist[artist];
     const boothLabel = booth ? ` <span class="booth">(${booth})</span>` : "";
-    html += `<div class="checklist-artist"><h3>${artist}${boothLabel}</h3>`;
+    const escapedArtist = artist.replace(/'/g, "\\'");
+    html += `<div class="checklist-artist"><h3>${artist}${boothLabel}<span class="remove-artist" onclick="removeArtist('${escapedArtist}')">✕ Remove all</span></h3>`;
     for (const c of cards) {
       const checked = c.signed ? "checked" : "";
       const cls = c.signed ? "checklist-card signed" : "checklist-card";
-      html += `<label class="${cls}"><input type="checkbox" ${checked} onchange="toggleSignedCard('${c.artist.replace(/'/g, "\\'")}', '${c.name.replace(/'/g, "\\'")}')"><span>${c.name}</span><small>${c.set} #${c.num}</small></label>`;
+      const escapedName = c.name.replace(/'/g, "\\'");
+      html += `<label class="${cls}"><input type="checkbox" ${checked} onchange="toggleSignedCard('${escapedArtist}', '${escapedName}')"><span>${c.name}</span><small>${c.set} #${c.num}</small><span class="remove-card" onclick="event.preventDefault();removeCard('${escapedArtist}', '${escapedName}')">✕</span></label>`;
     }
     html += `</div>`;
   }
@@ -90,6 +104,17 @@ function renderChecklist(data) {
 
 async function toggleSignedCard(artist, name) {
   const data = await window.api.toggleSigned({ id: currentConventionId, artist, name });
+  if (data) renderChecklist(data);
+}
+
+async function removeCard(artist, name) {
+  const data = await window.api.removeFromConvention({ id: currentConventionId, artist, name });
+  if (data) renderChecklist(data);
+}
+
+async function removeArtist(artist) {
+  if (!confirm(`Remove all cards by ${artist}?`)) return;
+  const data = await window.api.removeArtistFromConvention({ id: currentConventionId, artist });
   if (data) renderChecklist(data);
 }
 
@@ -131,17 +156,6 @@ function executeDeleteChecklist(name) {
 
 function cancelDeleteChecklist() {
   document.getElementById("convention-picker").classList.add("hidden");
-  // Restore picker content
-  const content = document.getElementById("convention-picker").querySelector(".modal-content");
-  content.innerHTML = `
-    <h3>Add to Convention Checklist</h3>
-    <div id="convention-list"></div>
-    <div class="modal-new">
-      <input type="text" id="new-convention-name" placeholder="New convention name...">
-      <button onclick="createAndAddConvention()">Create</button>
-    </div>
-    <button class="modal-close" onclick="hideConventionPicker()">Cancel</button>
-  `;
 }
 
 // Convention list on home page
@@ -165,6 +179,8 @@ window.addToExistingConvention = addToExistingConvention;
 window.createAndAddConvention = createAndAddConvention;
 window.showChecklistView = showChecklistView;
 window.toggleSignedCard = toggleSignedCard;
+window.removeCard = removeCard;
+window.removeArtist = removeArtist;
 window.hideChecklistView = hideChecklistView;
 window.confirmDeleteChecklist = confirmDeleteChecklist;
 window.executeDeleteChecklist = executeDeleteChecklist;

@@ -62,4 +62,20 @@ export function register() {
     const p = conPath(id);
     if (fs.existsSync(p)) fs.unlinkSync(p);
   });
+
+  ipcMain.handle("remove-from-convention", (event, { id, artist, name }) => {
+    const data = readCon(id);
+    if (!data) return null;
+    data.cards = data.cards.filter((c) => !(c.name === name && c.artist === artist));
+    writeCon(id, data);
+    return data;
+  });
+
+  ipcMain.handle("remove-artist-from-convention", (event, { id, artist }) => {
+    const data = readCon(id);
+    if (!data) return null;
+    data.cards = data.cards.filter((c) => c.artist !== artist);
+    writeCon(id, data);
+    return data;
+  });
 }

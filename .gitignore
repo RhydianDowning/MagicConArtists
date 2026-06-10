@@ -1,9 +1,6 @@
 node_modules/
-localStorage/Decklists/*
-localStorage/CardArtists/*
-localStorage/ArtistLists/*
-!localStorage/Decklists/.gitkeep
-!localStorage/CardArtists/.gitkeep
-!localStorage/ArtistLists/.gitkeep
 dist/
 .DS_Store
+
+localStorage/**/*
+!localStorage/**/.gitkeep
