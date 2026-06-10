@@ -164,6 +164,9 @@ body.land-mode .card.basicland { display: block !important; }
 .delete-checklist-btn:hover { background: #da3633; border-color: #da3633; }
 .share-checklist-btn { background: none; border: 1px solid #6fffe9; color: #6fffe9; width: auto; padding: 0.3rem 0.75rem; font-size: 0.75rem; margin-bottom: 1.5rem; margin-top: 0; margin-left: 0.5rem; cursor: pointer; border-radius: 4px; }
 .share-checklist-btn:hover { background: #1c2330; }
+.share-export-btn { display: block; width: 100%; text-align: center !important; background: #161b22 !important; border: 1px solid #6fffe9 !important; color: #6fffe9 !important; padding: 0.6rem !important; border-radius: 50px !important; font-size: 0.9rem; cursor: pointer; margin-bottom: 0.75rem; transition: background 0.2s; }
+.share-export-btn:hover { background: #1c2330 !important; }
+.share-export-btn:active { background: #238636 !important; border-color: #238636 !important; color: #fff !important; }
 .checklist-artist { margin-bottom: 1.2rem; }
 .checklist-artist h3 { color: #e6edf3; font-size: 1rem; margin-bottom: 0.5rem; padding-bottom: 0.3rem; border-bottom: 1px solid #21262d; }
 .checklist-artist .booth { color: #8b949e; font-size: 0.8rem; }

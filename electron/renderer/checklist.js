@@ -44,7 +44,12 @@ async function addToExistingConvention(id) {
   if (!cards.length) return;
   await window.api.addToConvention({ id, cards });
   hideConventionPicker();
-  if (confirm(`Added ${cards.length} card(s) to checklist. View it now?`)) {
+  if (window._phoneChecklistMode) {
+    window._phoneChecklistMode = false;
+    deselectAllCards();
+    await showChecklistView(id);
+    shareChecklist();
+  } else if (confirm(`Added ${cards.length} card(s) to checklist. View it now?`)) {
     deselectAllCards();
     showChecklistView(id);
   }
@@ -84,7 +89,6 @@ function renderChecklist(data) {
   const signed = data.cards.filter((c) => c.signed).length;
   html += `<p class="checklist-progress">${signed}/${total} signed</p>`;
   html += `<button class="delete-checklist-btn" onclick="confirmDeleteChecklist()">Delete Checklist</button>`;
-  html += `<button class="share-checklist-btn" onclick="shareChecklist()">Share to Phone</button>`;
   html += `<button class="share-checklist-btn" onclick="shareChecklist()">Share to Phone</button>`;
 
   for (const artist of sorted) {
@@ -181,6 +185,7 @@ window.showConventionPicker = showConventionPicker;
 window.hideConventionPicker = hideConventionPicker;
 window.addToExistingConvention = addToExistingConvention;
 window.createAndAddConvention = createAndAddConvention;
+window.getSelectedCardData = getSelectedCardData;
 window.showChecklistView = showChecklistView;
 window.toggleSignedCard = toggleSignedCard;
 window.removeCard = removeCard;
@@ -200,7 +205,7 @@ async function shareChecklist() {
     <p style="color:#8b949e;font-size:0.8rem;margin-bottom:0.75rem;">1. Scan the QR code to install the app on your phone</p>
     <img src="${qrDataUrl}" style="display:block;margin:0 auto 1rem;width:180px;height:180px;border-radius:8px;">
     <p style="color:#8b949e;font-size:0.8rem;margin-bottom:0.75rem;">2. Export your checklist and send it to your phone (AirDrop, email, etc.)</p>
-    <button onclick="exportChecklistFile()" style="background:#238636;border:none;color:#fff;width:100%;border-radius:6px;padding:0.5rem;cursor:pointer;margin-bottom:0.5rem;">Export Checklist File</button>
+    <button class="share-export-btn" onclick="exportChecklistFile()">Export Checklist File</button>
     <p style="color:#8b949e;font-size:0.7rem;margin-bottom:1rem;">3. Open the file in the app on your phone to load it</p>
     <button class="modal-close" onclick="document.getElementById('convention-picker').classList.add('hidden')">Close</button>
   `;
@@ -208,7 +213,10 @@ async function shareChecklist() {
 }
 
 async function exportChecklistFile() {
+  const btn = document.querySelector(".share-export-btn");
+  btn.textContent = "Exporting...";
   await window.api.exportChecklistFile(currentConventionId);
+  btn.textContent = "Export Checklist File";
 }
 window.shareChecklist = shareChecklist;
 window.exportChecklistFile = exportChecklistFile;

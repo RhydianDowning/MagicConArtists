@@ -123,3 +123,11 @@ window.toggleExportMenu = toggleExportMenu;
 window.exportPdfChecklist = exportPdfChecklist;
 window.exportPdfImages = exportPdfImages;
 window.exportMoxfield = exportMoxfield;
+
+async function exportPhoneChecklist() {
+  document.getElementById("export-menu").classList.add("hidden");
+  // Reuse convention picker but override the add behavior to also navigate + share
+  window._phoneChecklistMode = true;
+  showConventionPicker();
+}
+window.exportPhoneChecklist = exportPhoneChecklist;

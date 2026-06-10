@@ -87,16 +87,17 @@ export function register() {
   });
 
   ipcMain.handle("export-checklist-file", async (event, id) => {
-    const { dialog } = await import("electron");
+    const { dialog, shell, BrowserWindow } = await import("electron");
     const data = readCon(id);
     if (!data) return null;
-    const win = (await import("electron")).BrowserWindow.fromWebContents(event.sender);
+    const win = BrowserWindow.fromWebContents(event.sender);
     const { canceled, filePath } = await dialog.showSaveDialog(win, {
       defaultPath: `${data.name.replace(/[/\\?%*:|"<>]/g, "_")}.json`,
       filters: [{ name: "Checklist", extensions: ["json"] }],
     });
     if (canceled || !filePath) return null;
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+    shell.showItemInFolder(filePath);
     return filePath;
   });
 }
