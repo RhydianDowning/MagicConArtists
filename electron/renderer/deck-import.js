@@ -48,6 +48,7 @@ function toggleNewDeckForm() {
 }
 
 function parseDeckLine(line) {
+  // NOTE: Keep in sync with src/parser.js (duplicated here for browser context)
   // Strip foil marker before parsing
   line = line.replace(/\s*\*[Ff]\*$/, "");
   // Handle pipe-separated format: "Card Name|SET|NUM" or "Card Name|SET|NUM|board"
