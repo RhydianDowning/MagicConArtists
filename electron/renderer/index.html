@@ -53,9 +53,32 @@
 
     <button id="run-btn" onclick="runMatch()">Find Matches</button>
     <div id="progress"></div>
+
+    <div id="checklists-section" class="checklists-section hidden">
+      <div class="checklists-divider"></div>
+      <label>My Checklists</label>
+      <div id="convention-links" class="convention-links"></div>
+    </div>
   </div>
 
   <div id="results"></div>
+
+  <div id="convention-picker" class="modal hidden">
+    <div class="modal-content">
+      <h3>Add to Convention Checklist</h3>
+      <div id="convention-list"></div>
+      <div class="modal-new">
+        <input type="text" id="new-convention-name" placeholder="New convention name...">
+        <button onclick="createAndAddConvention()">Create</button>
+      </div>
+      <button class="modal-close" onclick="hideConventionPicker()">Cancel</button>
+    </div>
+  </div>
+
+  <div id="checklist-view" class="hidden">
+    <button class="back-btn" onclick="hideChecklistView()">← Back</button>
+    <div id="checklist-content"></div>
+  </div>
 
   <div id="action-bar" class="action-bar hidden">
     <span id="selected-count"></span>
@@ -70,6 +93,7 @@
         <button onclick="exportMoxfield()">Moxfield Decklist</button>
       </div>
     </span>
+    <button onclick="showConventionPicker()">Add to Checklist</button>
   </div>
 
   <div id="find-bar" class="find-bar hidden">
@@ -84,6 +108,7 @@
   <script src="artist-list.js"></script>
   <script src="results.js"></script>
   <script src="selection.js"></script>
+  <script src="checklist.js"></script>
   <script src="find.js"></script>
   <script src="app.js"></script>
 </body>

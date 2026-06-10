@@ -6,6 +6,7 @@
   const artists = await window.api.getArtistLists();
   renderDeckList(decks);
   renderArtistList(artists);
+  showConventionList();
 })();
 
 // Progress listener

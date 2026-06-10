@@ -16,4 +16,10 @@ contextBridge.exposeInMainWorld("api", {
   exportPdfChecklist: (cards) => ipcRenderer.invoke("export-pdf-checklist", cards),
   openFile: (path) => ipcRenderer.invoke("open-file", path),
   onProgress: (cb) => ipcRenderer.on("match-progress", (_, data) => cb(data)),
+  getConventions: () => ipcRenderer.invoke("get-conventions"),
+  createConvention: (name) => ipcRenderer.invoke("create-convention", name),
+  getConvention: (id) => ipcRenderer.invoke("get-convention", id),
+  addToConvention: (data) => ipcRenderer.invoke("add-to-convention", data),
+  toggleSigned: (data) => ipcRenderer.invoke("toggle-signed", data),
+  deleteConvention: (id) => ipcRenderer.invoke("delete-convention", id),
 });

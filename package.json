@@ -51,5 +51,8 @@
   },
   "dependencies": {
     "jspdf": "^2.5.2"
+  },
+  "electronmon": {
+    "patterns": ["!localStorage/**"]
   }
 }

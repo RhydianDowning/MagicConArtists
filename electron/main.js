@@ -7,6 +7,7 @@ import { register as registerArtists } from "./ipc/artists.js";
 import { register as registerMoxfield } from "./ipc/moxfield.js";
 import { register as registerMatch } from "./ipc/match.js";
 import { register as registerExport } from "./ipc/export.js";
+import { register as registerConventions } from "./ipc/conventions.js";
 
 function createWindow() {
   ensureDirs();
@@ -30,6 +31,7 @@ registerArtists();
 registerMoxfield();
 registerMatch();
 registerExport();
+registerConventions();
 
 ipcMain.handle("open-urls", (event, urls) => {
   urls.forEach((url) => shell.openExternal(url));
