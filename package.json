@@ -1,5 +1,5 @@
 {
-  "name": "signature-hunter",
+  "name": "painters-servant",
   "version": "1.0.0",
   "description": "Find which artists from an event have illustrated cards in your MTG decklists",
   "main": "electron/main.js",
@@ -15,8 +15,8 @@
   "license": "ISC",
   "type": "module",
   "build": {
-    "appId": "com.signaturehunter.app",
-    "productName": "SignatureHunter",
+    "appId": "com.paintersservant.app",
+    "productName": "Painters Servant",
     "files": [
       "electron/**/*",
       "src/**/*",

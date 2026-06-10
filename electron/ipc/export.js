@@ -53,35 +53,100 @@ export function register() {
 
     // Group by artist
     const byArtist = {};
+    const artistBooth = {};
     cards.forEach((c) => {
       if (!byArtist[c.artist]) byArtist[c.artist] = [];
       byArtist[c.artist].push(c.name);
+      if (c.booth) artistBooth[c.artist] = c.booth;
     });
     const sorted = Object.keys(byArtist).sort();
 
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-    let y = 15;
+    const pageW = 210;
+    const margin = 15;
+    const colW = (pageW - margin * 2 - 10) / 2; // 10mm gutter
+    const colX = [margin, margin + colW + 10];
+    const maxY = 280;
+    let col = 0;
+    let y = margin;
 
-    doc.setFontSize(18);
-    doc.text("Card Signing Checklist", 105, y, { align: "center" });
-    y += 12;
+    // Header
+    doc.setFontSize(20);
+    doc.setTextColor(30, 30, 30);
+    doc.text("Painter's Servant", pageW / 2, y, { align: "center" });
+    y += 6;
+    doc.setFontSize(8);
+    doc.setTextColor(130, 130, 130);
+    doc.text("CARD SIGNING CHECKLIST", pageW / 2, y, { align: "center" });
+    y += 4;
+    // Thin rule
+    doc.setDrawColor(180, 180, 180);
+    doc.setLineWidth(0.3);
+    doc.line(margin, y, pageW - margin, y);
+    y += 8;
+
+    const startY = y;
+    let colY = [startY, startY];
+
+    function nextPage() {
+      doc.addPage();
+      colY = [margin + 5, margin + 5];
+      col = 0;
+    }
 
     for (const artist of sorted) {
-      if (y > 275) { doc.addPage(); y = 15; }
-      doc.setFontSize(12);
-      doc.setTextColor(26, 138, 106);
-      doc.text(artist, 10, y);
-      y += 6;
-
-      doc.setFontSize(10);
-      doc.setTextColor(51, 51, 51);
-      for (const name of byArtist[artist]) {
-        if (y > 280) { doc.addPage(); y = 15; }
-        doc.rect(10, y - 3, 3.5, 3.5);
-        doc.text(name, 16, y);
-        y += 5;
+      // Estimate space needed: artist header + at least 1 card
+      const needed = 7 + 5;
+      if (colY[col] + needed > maxY) {
+        col++;
+        if (col > 1) nextPage();
       }
-      y += 3;
+
+      const x = colX[col];
+      let cy = colY[col];
+
+      // Artist name - bold with subtle underline
+      doc.setFontSize(9);
+      doc.setTextColor(40, 40, 40);
+      doc.setFont("helvetica", "bold");
+      const label = artistBooth[artist] ? `${artist} - (${artistBooth[artist]})` : artist;
+      doc.text(label, x, cy);
+      cy += 1;
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineWidth(0.2);
+      doc.line(x, cy, x + colW, cy);
+      cy += 4;
+
+      // Cards
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(60, 60, 60);
+      for (const name of byArtist[artist]) {
+        if (cy + 4 > maxY) {
+          colY[col] = cy;
+          col++;
+          if (col > 1) nextPage();
+          cy = colY[col];
+        }
+        const cx = colX[col];
+        // Checkbox
+        doc.setDrawColor(100, 100, 100);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(cx, cy - 2.8, 3, 3, 0.5, 0.5);
+        doc.text(name, cx + 4.5, cy);
+        cy += 4.5;
+      }
+      cy += 3;
+      colY[col] = cy;
+    }
+
+    // Footer on each page
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(7);
+      doc.setTextColor(160, 160, 160);
+      doc.text(`Page ${i} of ${pageCount}`, pageW / 2, 292, { align: "center" });
     }
 
     fs.writeFileSync(filePath, Buffer.from(doc.output("arraybuffer")));

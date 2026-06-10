@@ -79,9 +79,11 @@ async function exportPdfChecklist() {
   const selected = [...document.querySelectorAll(".card.selected")];
   if (!selected.length) return;
   const cards = selected.map((el) => {
-    const artist = el.closest("details")?.querySelector("h2")?.firstChild?.textContent?.trim() || "Unknown";
+    const h2 = el.closest("details")?.querySelector("h2");
+    const artist = h2?.firstChild?.textContent?.trim() || "Unknown";
+    const booth = h2?.querySelector(".booth")?.textContent?.trim() || "";
     const name = el.querySelector("p")?.firstChild?.textContent?.trim() || "";
-    return { artist, name };
+    return { artist, booth, name };
   }).filter((c) => c.name);
   showExportLoading(true);
   const filePath = await window.api.exportPdfChecklist(cards);

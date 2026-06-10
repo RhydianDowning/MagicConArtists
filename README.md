@@ -1,4 +1,4 @@
-# SignatureHunter
+# Painter's Servant
 
 Find which artists from an event have illustrated cards in your MTG decklists — with card art, set codes, and booth numbers.
 
