@@ -141,7 +141,7 @@ body.land-mode .card.basicland { display: block !important; }
 /* Modal */
 .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; }
 .modal-content { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 1.5rem; min-width: 300px; max-width: 400px; }
-.modal-content h3 { color: #e6edf3; margin-bottom: 1rem; font-size: 1.1rem; }
+.modal-content h3 { color: #6fffe9; margin-bottom: 1rem; font-size: 1.1rem; text-align: center; }
 .modal-content button { display: block; width: 100%; text-align: left; background: none; border: none; color: #e6edf3; padding: 0.6rem 0.75rem; font-size: 0.9rem; border-radius: 6px; cursor: pointer; margin-bottom: 0.3rem; }
 .modal-content button:hover { background: #1c2330; }
 .modal-new { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
