@@ -175,10 +175,12 @@ body.land-mode .card.basicland { display: block !important; }
 .checklist-card input[type="checkbox"] { accent-color: #6fffe9; width: 16px; height: 16px; }
 .checklist-card.signed span { text-decoration: line-through; color: #8b949e; }
 .checklist-card small { margin-left: auto; color: #7d8590; font-size: 0.75rem; }
-.checklist-card .remove-card { color: #f85149; font-size: 0.75rem; margin-left: 0.5rem; opacity: 0; transition: opacity 0.2s; cursor: pointer; }
-.checklist-card:hover .remove-card { opacity: 1; }
-.remove-artist { font-size: 0.7rem; font-weight: 400; color: #8b949e; margin-left: auto; cursor: pointer; opacity: 0; transition: opacity 0.2s; }
-.remove-artist:hover { color: #f85149; }
+.checklist-card .remove-card { color: #f85149; font-size: 0.9rem; margin-left: 0.5rem; opacity: 0; transition: opacity 0.2s; cursor: pointer; padding: 0.2rem 0.4rem; }
+.checklist-card:hover .remove-card { opacity: 0.6; }
+.checklist-card .remove-card:hover { opacity: 1; }
+.remove-artist { font-size: 0.7rem; font-weight: 400; color: #8b949e; margin-left: auto; cursor: pointer; opacity: 0; transition: opacity 0.2s, border-color 0.2s; border: 1px solid transparent; border-radius: 4px; padding: 0.2rem 0.5rem; }
+.checklist-artist:hover .remove-artist { opacity: 0.5; border-color: #30363d; }
+.remove-artist:hover { opacity: 1 !important; color: #f85149 !important; border-color: #f85149 !important; }
 .checklist-artist h3:hover .remove-artist { opacity: 1; }
 .checklist-artist h3 { display: flex; align-items: center; }
 
