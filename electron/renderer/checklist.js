@@ -84,6 +84,8 @@ function renderChecklist(data) {
   const signed = data.cards.filter((c) => c.signed).length;
   html += `<p class="checklist-progress">${signed}/${total} signed</p>`;
   html += `<button class="delete-checklist-btn" onclick="confirmDeleteChecklist()">Delete Checklist</button>`;
+  html += `<button class="share-checklist-btn" onclick="shareChecklist()">Share to Phone</button>`;
+  html += `<button class="share-checklist-btn" onclick="shareChecklist()">Share to Phone</button>`;
 
   for (const artist of sorted) {
     const { booth, cards } = byArtist[artist];
@@ -187,4 +189,19 @@ window.hideChecklistView = hideChecklistView;
 window.confirmDeleteChecklist = confirmDeleteChecklist;
 window.executeDeleteChecklist = executeDeleteChecklist;
 window.cancelDeleteChecklist = cancelDeleteChecklist;
+
+async function shareChecklist() {
+  const baseUrl = "https://rhydiandowning.github.io/MagicConArtists/pwa/";
+  const qrDataUrl = await window.api.generateChecklistQR({ id: currentConventionId, baseUrl });
+  if (!qrDataUrl) return;
+  const modal = document.getElementById("convention-picker");
+  modal.querySelector(".modal-content").innerHTML = `
+    <h3>Scan with your phone</h3>
+    <img src="${qrDataUrl}" style="display:block;margin:1rem auto;width:200px;height:200px;border-radius:8px;">
+    <p style="color:#8b949e;font-size:0.8rem;text-align:center;">Opens the checklist as a mobile app. Works offline.</p>
+    <button class="modal-close" onclick="document.getElementById('convention-picker').classList.add('hidden')">Close</button>
+  `;
+  modal.classList.remove("hidden");
+}
+window.shareChecklist = shareChecklist;
 window.showConventionList = showConventionList;

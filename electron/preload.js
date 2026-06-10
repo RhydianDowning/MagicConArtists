@@ -24,4 +24,5 @@ contextBridge.exposeInMainWorld("api", {
   deleteConvention: (id) => ipcRenderer.invoke("delete-convention", id),
   removeFromConvention: (data) => ipcRenderer.invoke("remove-from-convention", data),
   removeArtistFromConvention: (data) => ipcRenderer.invoke("remove-artist-from-convention", data),
+  generateChecklistQR: (data) => ipcRenderer.invoke("generate-checklist-qr", data),
 });
