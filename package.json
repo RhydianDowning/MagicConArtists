@@ -9,7 +9,8 @@
     "test": "node --test tests/*.test.js",
     "build:mac": "electron-builder --mac",
     "build:win": "electron-builder --win",
-    "build:all": "electron-builder --mac --win"
+    "build:linux": "electron-builder --linux",
+    "build:all": "electron-builder --mac --win --linux"
   },
   "keywords": [],
   "author": "",
