@@ -1,6 +1,6 @@
 # Welcome to Painter's Servant
 
-Find which artists from an event have illustrated cards in your MTG decklists — with card art, set codes, and booth numbers. Plan your signing queue before you arrive.
+Find which artists from an event have illustrated cards in your MTG decklists — with card art, set codes, and booth numbers. Make your Checklist before you arrive, and export it to PDF to print, or to your phone for offline use.
 
 ## Download
 
@@ -51,10 +51,6 @@ Results show card art grouped by artist with booth numbers and card counts. Use 
 
 Create checklists for specific events. Track which cards you've had signed — check them off in-app. Share to your phone via the companion PWA ([ConSign to Memory](https://rhydiandowning.github.io/MagicConArtists/pwa/)) for use at the venue.
 
-### 7. Find (Ctrl/Cmd+F)
-
-Search within results to quickly locate a specific card or artist.
-
 ## Features
 
 - **Moxfield Import** — paste a URL to import a deck
@@ -76,7 +72,7 @@ git clone https://github.com/RhydianDowning/MagicConArtists.git
 cd MagicConArtists
 npm install
 npm run dev     # dev mode with hot reload
-npm test        # run tests
+npm test        # run tests (bare minumim test suite...)
 npm run build:mac
 npm run build:win
 npm run build:linux
@@ -112,3 +108,4 @@ npm run build:linux
 
 - [ ] Light/dark mode toggle
 - [ ] Cache reset notification (new cards on Scryfall)
+- [ ] Fix Ctrl-F Functionality in Results Page
